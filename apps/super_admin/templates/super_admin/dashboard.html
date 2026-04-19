@@ -1,0 +1,176 @@
+<!-- apps/super_admin/templates/super_admin/dashboard.html -->
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back, {{ request.user.email }}</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ stats.total_agents }}</div>
+                <div class="stat-label">Total Agents</div>
+                <div class="stat-sub">
+                    🤖 AI: {{ stats.ai_agents }} | 👤 Human: {{ stats.human_agents }}
+                </div>
+            </div>
+            <div class="stat-trend {% if stats.online_agents > 0 %}positive{% endif %}">
+                {{ stats.online_agents }} online now
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ stats.active_tasks }}</div>
+                <div class="stat-label">Active Tasks</div>
+                <div class="stat-sub">Completed today: {{ stats.completed_today }}</div>
+            </div>
+            <div class="stat-trend">
+                ⚡ Avg: {{ stats.avg_completion_time|floatformat:0 }}ms
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ stats.total_volume|floatformat:0 }}</div>
+                <div class="stat-label">Total Volume (sats)</div>
+                <div class="stat-sub">Today: {{ stats.today_volume|floatformat:0 }} sats</div>
+            </div>
+            <div class="stat-trend positive">
+                ✅ {{ stats.success_rate|floatformat:1 }}% success
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ stats.total_tasks }}</div>
+                <div class="stat-label">Total Tasks</div>
+                <div class="stat-sub">All time</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Alerts -->
+    {% if system_alerts %}
+    <div class="alerts-container">
+        {% for alert in system_alerts %}
+        <div class="alert alert-{{ alert.type }}">
+            <span class="alert-icon">⚠️</span>
+            <span>{{ alert.message }}</span>
+            <button class="alert-close">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{% url 'super_admin:agents' %}" class="action-btn">
+                <span>👥</span> Manage Agents
+            </a>
+            <a href="{% url 'super_admin:tasks' %}" class="action-btn">
+                <span>📋</span> View Tasks
+            </a>
+            <a href="{% url 'super_admin:payments' %}" class="action-btn">
+                <span>💰</span> Transactions
+            </a>
+            <a href="{% url 'super_admin:settings' %}" class="action-btn">
+                <span>⚙️</span> System Settings
+            </a>
+            <a href="{% url 'super_admin:analytics' %}" class="action-btn">
+                <span>📊</span> Analytics
+            </a>
+            <a href="{% url 'super_admin:admin_users' %}" class="action-btn">
+                <span>👑</span> Admin Users
+            </a>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="recent-section">
+        <div class="recent-tasks">
+            <h2>Recent Tasks</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Budget</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in recent_tasks %}
+                    <tr>
+                        <td>{{ task.id|slice:":8" }}</td>
+                        <td>{{ task.title|truncatechars:40 }}</td>
+                        <td>{{ task.budget_sats }} sats</td>
+                        <td>
+                            <span class="status-badge status-{{ task.state }}">
+                                {{ task.state }}
+                            </span>
+                        </td>
+                        <td>{{ task.created_at|timesince }} ago</td>
+                        <td>
+                            <a href="{% url 'super_admin:task_detail' task.id %}" class="btn-sm">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="recent-agents">
+            <h2>Recent Agents</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Trust Score</th>
+                        <th>Status</th>
+                        <th>Last Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agent in recent_agents %}
+                    <tr>
+                        <td>{{ agent.name }}</td>
+                        <td>{{ agent.agent_type|upper }}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ agent.trust_score|floatformat:2|add:'0' }}%"></div>
+                                <span>{{ agent.trust_score|floatformat:1 }}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if agent.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                            {% else %}
+                            <span class="status-badge status-inactive">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ agent.last_heartbeat|timesince }} ago</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
