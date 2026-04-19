@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Task | {{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="verify-task">
+    <div class="page-header">
+        <h1>Verify Task</h1>
+        <p>Review and verify task completion</p>
+    </div>
+    
+    <div class="verify-grid">
+        <div class="task-details">
+            <div class="info-card">
+                <h3>Task Information</h3>
+                <ul>
+                    <li><strong>Title:</strong> {{ task.title }}</li>
+                    <li><strong>Description:</strong> {{ task.description }}</li>
+                    <li><strong>Budget:</strong> {{ task.budget_sats }} sats</li>
+                    <li><strong>Agent:</strong> {{ task.matched_agent.name }}</li>
+                    <li><strong>Completed:</strong> {{ task.completed_at|date:"M d, Y H:i" }}</li>
+                </ul>
+            </div>
+            
+            {% if execution %}
+            <div class="info-card">
+                <h3>Execution Details</h3>
+                <ul>
+                    <li><strong>Execution Type:</strong> {{ execution.execution_type|upper }}</li>
+                    <li><strong>Duration:</strong> {{ execution.duration_ms|default:"-" }} ms</li>
+                    <li><strong>Started:</strong> {{ execution.started_at|date:"M d, Y H:i" }}</li>
+                </ul>
+                
+                <h4>Output Data</h4>
+                <pre class="data-json">{{ execution.output_data|pprint|default:"No output data" }}</pre>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="verification-form">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="quality_score">Quality Score (0-100)</label>
+                    <input type="range" name="quality_score" id="quality_score" min="0" max="100" step="5" value="80">
+                    <span id="scoreValue">80%</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Verifier Notes</label>
+                    <textarea name="notes" id="notes" rows="4" class="form-control" placeholder="Add any observations or feedback..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" name="action" value="approve" class="btn btn-success">Approve Task</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const slider = document.getElementById('quality_score');
+    const scoreSpan = document.getElementById('scoreValue');
+    slider.addEventListener('input', () => {
+        scoreSpan.textContent = slider.value + '%';
+    });
+</script>
+{% endblock %}

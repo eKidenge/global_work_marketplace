@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ task.title }} | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="task-detail-container">
+    <div class="task-header">
+        <h1>{{ task.title }}</h1>
+        <div class="task-status">
+            <span class="status-badge status-{{ task.state }}">{{ task.state|upper }}</span>
+        </div>
+    </div>
+    
+    <div class="task-content">
+        <div class="task-main">
+            <div class="info-section">
+                <h3>Description</h3>
+                <p>{{ task.description }}</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>Requirements</h3>
+                <div class="capabilities-list">
+                    {% for cap in task.required_capabilities %}
+                    <span class="capability-tag">{{ cap }}</span>
+                    {% endfor %}
+                </div>
+                {% if task.required_human %}
+                <div class="warning-badge">⚠️ Human verification required</div>
+                {% endif %}
+            </div>
+            
+            <div class="info-section">
+                <h3>Task Details</h3>
+                <ul class="details-list">
+                    <li><strong>Budget:</strong> {{ task.budget_sats }} sats</li>
+                    <li><strong>Priority:</strong> <span class="priority-{{ task.priority }}">{{ task.priority|upper }}</span></li>
+                    <li><strong>Created:</strong> {{ task.created_at|date:"F d, Y H:i" }}</li>
+                    <li><strong>Expires:</strong> {{ task.expires_at|date:"F d, Y H:i" }}</li>
+                    {% if task.assigned_at %}
+                    <li><strong>Assigned:</strong> {{ task.assigned_at|date:"F d, Y H:i" }}</li>
+                    {% endif %}
+                    {% if task.completed_at %}
+                    <li><strong>Completed:</strong> {{ task.completed_at|date:"F d, Y H:i" }}</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Execution Logs -->
+            {% if logs %}
+            <div class="info-section">
+                <h3>Execution Logs</h3>
+                <div class="logs-container">
+                    {% for log in logs %}
+                    <div class="log-entry log-{{ log.log_level }}">
+                        <span class="log-time">{{ log.timestamp|date:"H:i:s" }}</span>
+                        <span class="log-message">{{ log.message }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="task-sidebar">
+            <!-- Suggested Agents -->
+            {% if task.state == 'open' %}
+            <div class="sidebar-card">
+                <h3>Suggested Agents</h3>
+                <div class="suggested-agents">
+                    {% for agent in suggested_agents %}
+                    <div class="agent-suggestion">
+                        <div class="agent-name">{{ agent.name }}</div>
+                        <div class="agent-trust">Trust: {{ agent.trust_score|floatformat:1 }}%</div>
+                        <a href="{% url 'agents:agent_detail' agent.id %}" class="btn-sm">View</a>
+                    </div>
+                    {% empty %}
+                    <p>No suggested agents</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Actions -->
+            <div class="sidebar-card">
+                <h3>Actions</h3>
+                {% if task.state == 'open' and user.is_authenticated %}
+                    <a href="{% url 'tasks:task_bid' task.id %}" class="btn btn-primary btn-block">Bid on Task</a>
+                {% endif %}
+                {% if task.state == 'assigned' and can_execute %}
+                    <a href="{% url 'tasks:task_start' task.id %}" class="btn btn-primary btn-block">Start Execution</a>
+                {% endif %}
+                {% if task.state == 'executing' and can_execute %}
+                    <a href="{% url 'tasks:task_complete' task.id %}" class="btn btn-success btn-block">Complete Task</a>
+                {% endif %}
+                {% if task.created_by == user and task.state == 'open' %}
+                    <a href="{% url 'tasks:task_edit' task.id %}" class="btn btn-secondary btn-block">Edit Task</a>
+                    <a href="{% url 'tasks:task_cancel' task.id %}" class="btn btn-danger btn-block" onclick="return confirm('Cancel this task?')">Cancel Task</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Tasks -->
+    {% if similar_tasks %}
+    <div class="similar-tasks">
+        <h3>Similar Tasks</h3>
+        <div class="tasks-grid mini">
+            {% for similar in similar_tasks %}
+            <div class="task-card mini">
+                <div class="task-title">{{ similar.title|truncatechars:40 }}</div>
+                <div class="task-budget">{{ similar.budget_sats }} sats</div>
+                <a href="{% url 'tasks:task_detail' similar.id %}" class="btn-sm">View</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

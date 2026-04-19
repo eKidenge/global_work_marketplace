@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Webhook Endpoints{% endblock %}
+
+{% block content %}
+<div class="webhooks-container">
+    <div class="page-header">
+        <h1>Webhook Endpoints</h1>
+        <a href="{% url 'webhooks:create' %}" class="btn btn-primary">Create Endpoint</a>
+    </div>
+    
+    <div class="endpoints-list">
+        {% for endpoint in endpoints %}
+        <div class="endpoint-card">
+            <div class="endpoint-header">
+                <div class="endpoint-url">{{ endpoint.url|truncatechars:60 }}</div>
+                <div class="endpoint-status {% if endpoint.is_active %}active{% else %}inactive{% endif %}">
+                    {% if endpoint.is_active %}Active{% else %}Inactive{% endif %}
+                </div>
+            </div>
+            <div class="endpoint-body">
+                <div class="events">
+                    <strong>Events:</strong>
+                    {% for event in endpoint.events %}
+                    <span class="event-tag">{{ event }}</span>
+                    {% endfor %}
+                </div>
+                <div class="stats">
+                    <span>Deliveries: {{ endpoint.deliveries.count }}</span>
+                    <span>Failures: {{ endpoint.failure_count }}</span>
+                    <span>Last: {{ endpoint.last_triggered_at|timesince|default:"Never" }} ago</span>
+                </div>
+            </div>
+            <div class="endpoint-footer">
+                <a href="{% url 'webhooks:detail' endpoint.id %}" class="btn-sm">View</a>
+                <a href="{% url 'webhooks:edit' endpoint.id %}" class="btn-sm">Edit</a>
+                <a href="{% url 'webhooks:test' endpoint.id %}" class="btn-sm btn-primary">Test</a>
+                <a href="{% url 'webhooks:delete' endpoint.id %}" class="btn-sm btn-danger" onclick="return confirm('Delete this endpoint?')">Delete</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No webhook endpoints created yet.</p>
+            <a href="{% url 'webhooks:create' %}" class="btn btn-primary">Create Your First Endpoint</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

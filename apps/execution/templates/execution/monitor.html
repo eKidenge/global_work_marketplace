@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Execution Monitor{% endblock %}
+
+{% block content %}
+<div class="execution-monitor">
+    <div class="page-header">
+        <h1>Execution Monitor</h1>
+        <div class="filters">
+            <select id="statusFilter" onchange="filterExecutions()">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="running">Running</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="execution-grid">
+        {% for exec in executions %}
+        <div class="execution-card" data-status="{{ exec.state }}">
+            <div class="execution-header">
+                <div class="execution-id">{{ exec.id|slice:":8" }}</div>
+                <div class="status-badge status-{{ exec.state }}">{{ exec.state }}</div>
+            </div>
+            <div class="execution-body">
+                <div class="task-title">{{ exec.task.title|truncatechars:60 }}</div>
+                <div class="execution-details">
+                    <span>🤖 {{ exec.agent.name }}</span>
+                    <span>📋 {{ exec.execution_type|upper }}</span>
+                    {% if exec.duration_ms %}
+                    <span>⏱️ {{ exec.duration_ms|floatformat:0 }} ms</span>
+                    {% endif %}
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ exec.progress|default:0 }}%"></div>
+                </div>
+            </div>
+            <div class="execution-footer">
+                <a href="{% url 'execution:detail' exec.id %}" class="btn-sm">Details</a>
+                <a href="{% url 'execution:logs' exec.id %}" class="btn-sm">Logs</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">No executions found</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function filterExecutions() {
+        const filter = document.getElementById('statusFilter').value;
+        const cards = document.querySelectorAll('.execution-card');
+        
+        cards.forEach(card => {
+            if (filter === '' || card.dataset.status === filter) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

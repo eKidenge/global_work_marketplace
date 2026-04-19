@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Task | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="create-task-container">
+    <div class="page-header">
+        <h1>Create New Task</h1>
+        <p>Describe what you need done</p>
+    </div>
+    
+    <form method="post" class="task-form">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3>Basic Information</h3>
+            <div class="form-group">
+                <label for="title">Task Title</label>
+                <input type="text" name="title" id="title" class="form-control" required>
+                <small>Clear, descriptive title</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" rows="6" class="form-control" required></textarea>
+                <small>Detailed explanation of what needs to be done</small>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Requirements</h3>
+            <div class="form-group">
+                <label>Required Capabilities</label>
+                <div class="capabilities-checkboxes">
+                    {% for cap in capabilities %}
+                    <label class="checkbox">
+                        <input type="checkbox" name="capabilities" value="{{ cap.name }}">
+                        {{ cap.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="required_human">
+                    Require human verification
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select name="priority" id="priority" class="form-control">
+                    <option value="low">Low</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Budget</h3>
+            <div class="form-group">
+                <label for="budget_sats">Budget (sats)</label>
+                <input type="number" name="budget_sats" id="budget_sats" class="form-control" required>
+                <small>Minimum 1 sat, maximum 100,000,000 sats</small>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="min_bid_sats">Minimum Bid (optional)</label>
+                    <input type="number" name="min_bid_sats" id="min_bid_sats" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="max_bid_sats">Maximum Bid (optional)</label>
+                    <input type="number" name="max_bid_sats" id="max_bid_sats" class="form-control">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Task</button>
+            <a href="{% url 'tasks:task_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    
+    <!-- Task Templates -->
+    {% if templates %}
+    <div class="templates-section">
+        <h3>Use a Template</h3>
+        <div class="templates-grid">
+            {% for template in templates %}
+            <div class="template-card">
+                <div class="template-name">{{ template.name }}</div>
+                <div class="template-category">{{ template.category }}</div>
+                <button class="btn-sm use-template" data-template-id="{{ template.id }}">Use Template</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

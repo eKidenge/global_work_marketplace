@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reputation | {{ agent.name }}{% endblock %}
+
+{% block content %}
+<div class="reputation-container">
+    <div class="page-header">
+        <h1>{{ agent.name }} - Reputation</h1>
+        <div class="overall-score">
+            Overall Score: <span class="score-value">{{ reputation.overall_score|floatformat:1 }}%</span>
+        </div>
+    </div>
+    
+    <div class="reputation-grid">
+        <div class="score-card">
+            <h3>Quality Scores</h3>
+            <div class="score-item">
+                <span>Reliability</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ reputation.reliability_score|floatformat:0 }}%"></div>
+                </div>
+                <span>{{ reputation.reliability_score|floatformat:1 }}%</span>
+            </div>
+            <div class="score-item">
+                <span>Quality</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ reputation.quality_score|floatformat:0 }}%"></div>
+                </div>
+                <span>{{ reputation.quality_score|floatformat:1 }}%</span>
+            </div>
+            <div class="score-item">
+                <span>Speed</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ reputation.speed_score|floatformat:0 }}%"></div>
+                </div>
+                <span>{{ reputation.speed_score|floatformat:1 }}%</span>
+            </div>
+            <div class="score-item">
+                <span>Communication</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ reputation.communication_score|floatformat:0 }}%"></div>
+                </div>
+                <span>{{ reputation.communication_score|floatformat:1 }}%</span>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <h3>Review Statistics</h3>
+            <div class="stats">
+                <div class="stat">Total Reviews: <strong>{{ reputation.total_reviews }}</strong></div>
+                <div class="stat positive">Positive: <strong>{{ reputation.positive_reviews }}</strong></div>
+                <div class="stat negative">Negative: <strong>{{ reputation.negative_reviews }}</strong></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="recent-reviews">
+        <h3>Recent Reviews</h3>
+        {% for review in recent_verifications %}
+        <div class="review-card">
+            <div class="review-header">
+                <span class="task-link"><a href="{% url 'tasks:task_detail' review.task.id %}">{{ review.task.title }}</a></span>
+                <span class="review-score">Score: {{ review.quality_score|floatformat:0 }}%</span>
+            </div>
+            <div class="review-notes">{{ review.verifier_notes|default:"No notes provided" }}</div>
+            <div class="review-date">{{ review.verified_at|date:"M d, Y" }}</div>
+        </div>
+        {% empty %}
+        <p>No reviews yet</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Real-time Dispatch Board{% endblock %}
+
+{% block content %}
+<div class="realtime-board">
+    <div class="page-header">
+        <h1>Real-time Dispatch Board</h1>
+        <div class="live-indicator">● LIVE</div>
+    </div>
+    
+    <div class="board-stats">
+        <div class="stat">
+            <span class="stat-value" id="pendingCount">{{ pending_tasks }}</span>
+            <span class="stat-label">Pending Tasks</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value" id="availableCount">{{ available_agents }}</span>
+            <span class="stat-label">Available Agents</span>
+        </div>
+    </div>
+    
+    <div class="board-grid">
+        <div class="pending-tasks">
+            <h3>Pending Tasks</h3>
+            <div id="pendingTasksList">
+                {% for task in pending_tasks_list|default:"" %}
+                <div class="pending-task">Loading...</div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="available-agents">
+            <h3>Available Agents</h3>
+            <div id="availableAgentsList">
+                {% for agent in available_agents_list|default:"" %}
+                <div class="available-agent">Loading...</div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="recent-matches">
+            <h3>Recent Matches</h3>
+            <div id="recentMatches">
+                {% for match in recent_matches %}
+                <div class="match-item">
+                    <span>{{ match.task.title|truncatechars:30 }}</span>
+                    <span>→</span>
+                    <span>{{ match.selected_agent.name }}</span>
+                    <span class="match-time">{{ match.created_at|timesince }} ago</span>
+                </div>
+                {% empty %}
+                <div>No recent matches</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // WebSocket connection for real-time updates
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/dispatch/');
+    
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'queue_update') {
+            document.getElementById('pendingCount').innerText = data.pending_count;
+            document.getElementById('availableCount').innerText = data.available_count;
+        }
+        
+        if (data.type === 'new_match') {
+            const matchesDiv = document.getElementById('recentMatches');
+            const newMatch = document.createElement('div');
+            newMatch.className = 'match-item';
+            newMatch.innerHTML = `
+                <span>${data.task_title}</span>
+                <span>→</span>
+                <span>${data.agent_name}</span>
+                <span class="match-time">just now</span>
+            `;
+            matchesDiv.insertBefore(newMatch, matchesDiv.firstChild);
+            if (matchesDiv.children.length > 10) {
+                matchesDiv.removeChild(matchesDiv.lastChild);
+            }
+        }
+    };
+</script>
+{% endblock %}

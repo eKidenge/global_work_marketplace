@@ -2,61 +2,64 @@
 {% extends "super_admin/base.html" %}
 {% load static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard | Super Admin{% endblock %}
+
+{% block page_title %}
+    <h1>Dashboard</h1>
+    <p>Welcome back, {{ request.user.get_full_name|default:request.user.email }}</p>
+{% endblock %}
 
 {% block content %}
 <div class="admin-container">
-    <div class="page-header">
-        <h1>Dashboard</h1>
-        <p>Welcome back, {{ request.user.email }}</p>
-    </div>
-    
     <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">🤖</div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.total_agents }}</div>
-                <div class="stat-label">Total Agents</div>
-                <div class="stat-sub">
-                    🤖 AI: {{ stats.ai_agents }} | 👤 Human: {{ stats.human_agents }}
-                </div>
+            <div class="stat-header">
+                <span class="stat-title">Total Agents</span>
             </div>
-            <div class="stat-trend {% if stats.online_agents > 0 %}positive{% endif %}">
-                {{ stats.online_agents }} online now
+            <div class="stat-value">{{ stats.total_agents|default:0 }}</div>
+            <div class="stat-change">
+                <span>AI: {{ stats.ai_agents|default:0 }}</span>
+                <span class="stat-separator">|</span>
+                <span>Human: {{ stats.human_agents|default:0 }}</span>
             </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">📋</div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.active_tasks }}</div>
-                <div class="stat-label">Active Tasks</div>
-                <div class="stat-sub">Completed today: {{ stats.completed_today }}</div>
-            </div>
-            <div class="stat-trend">
-                ⚡ Avg: {{ stats.avg_completion_time|floatformat:0 }}ms
+            <div class="stat-change {% if stats.online_agents > 0 %}positive{% else %}negative{% endif %}">
+                {{ stats.online_agents|default:0 }} agents online
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.total_volume|floatformat:0 }}</div>
-                <div class="stat-label">Total Volume (sats)</div>
-                <div class="stat-sub">Today: {{ stats.today_volume|floatformat:0 }} sats</div>
+            <div class="stat-header">
+                <span class="stat-title">Active Tasks</span>
             </div>
-            <div class="stat-trend positive">
-                ✅ {{ stats.success_rate|floatformat:1 }}% success
+            <div class="stat-value">{{ stats.active_tasks|default:0 }}</div>
+            <div class="stat-change">
+                Completed today: {{ stats.completed_today|default:0 }}
+            </div>
+            <div class="stat-change">
+                Average: {{ stats.avg_completion_time|floatformat:0|default:0 }}ms
             </div>
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-info">
-                <div class="stat-value">{{ stats.total_tasks }}</div>
-                <div class="stat-label">Total Tasks</div>
-                <div class="stat-sub">All time</div>
+            <div class="stat-header">
+                <span class="stat-title">Total Volume</span>
+            </div>
+            <div class="stat-value">{{ stats.total_volume|floatformat:0|default:0 }}</div>
+            <div class="stat-label">sats</div>
+            <div class="stat-change positive">
+                {{ stats.success_rate|floatformat:1|default:0 }}% success rate
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Platform Health</span>
+            </div>
+            <div class="stat-value">{{ stats.total_tasks|default:0 }}</div>
+            <div class="stat-label">Total tasks processed</div>
+            <div class="stat-change positive">
+                System operational
             </div>
         </div>
     </div>
@@ -66,7 +69,7 @@
     <div class="alerts-container">
         {% for alert in system_alerts %}
         <div class="alert alert-{{ alert.type }}">
-            <span class="alert-icon">⚠️</span>
+            <span class="alert-icon">!</span>
             <span>{{ alert.message }}</span>
             <button class="alert-close">&times;</button>
         </div>
@@ -75,34 +78,53 @@
     {% endif %}
     
     <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h2>Quick Actions</h2>
-        <div class="action-buttons">
-            <a href="{% url 'super_admin:agents' %}" class="action-btn">
-                <span>👥</span> Manage Agents
-            </a>
-            <a href="{% url 'super_admin:tasks' %}" class="action-btn">
-                <span>📋</span> View Tasks
-            </a>
-            <a href="{% url 'super_admin:payments' %}" class="action-btn">
-                <span>💰</span> Transactions
-            </a>
-            <a href="{% url 'super_admin:settings' %}" class="action-btn">
-                <span>⚙️</span> System Settings
-            </a>
-            <a href="{% url 'super_admin:analytics' %}" class="action-btn">
-                <span>📊</span> Analytics
-            </a>
-            <a href="{% url 'super_admin:admin_users' %}" class="action-btn">
-                <span>👑</span> Admin Users
-            </a>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Quick Actions</h3>
+        </div>
+        <div class="card-body">
+            <div class="quick-actions">
+                <a href="{% url 'super_admin:agents' %}" class="action-card">
+                    <div class="action-icon">👥</div>
+                    <div class="action-title">Manage Agents</div>
+                    <div class="action-desc">View and manage all agents</div>
+                </a>
+                <a href="{% url 'super_admin:tasks' %}" class="action-card">
+                    <div class="action-icon">📋</div>
+                    <div class="action-title">View Tasks</div>
+                    <div class="action-desc">Monitor task execution</div>
+                </a>
+                <a href="{% url 'super_admin:payments' %}" class="action-card">
+                    <div class="action-icon">💰</div>
+                    <div class="action-title">Transactions</div>
+                    <div class="action-desc">View payment history</div>
+                </a>
+                <a href="{% url 'super_admin:settings' %}" class="action-card">
+                    <div class="action-icon">⚙️</div>
+                    <div class="action-title">System Settings</div>
+                    <div class="action-desc">Configure platform</div>
+                </a>
+                <a href="{% url 'super_admin:analytics' %}" class="action-card">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">Analytics</div>
+                    <div class="action-desc">View platform metrics</div>
+                </a>
+                <a href="{% url 'super_admin:admin_users' %}" class="action-card">
+                    <div class="action-icon">👥</div>
+                    <div class="action-title">Admin Users</div>
+                    <div class="action-desc">Manage administrators</div>
+                </a>
+            </div>
         </div>
     </div>
     
-    <!-- Recent Activity -->
-    <div class="recent-section">
-        <div class="recent-tasks">
-            <h2>Recent Tasks</h2>
+    <!-- Recent Tasks -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Tasks</h3>
+            <a href="{% url 'super_admin:tasks' %}" class="btn btn-outline">View All</a>
+        </div>
+        <div class="card-body">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -117,26 +139,44 @@
                 <tbody>
                     {% for task in recent_tasks %}
                     <tr>
-                        <td>{{ task.id|slice:":8" }}</td>
-                        <td>{{ task.title|truncatechars:40 }}</td>
-                        <td>{{ task.budget_sats }} sats</td>
+                        <td class="text-mono">{{ task.id|slice:":8" }}</td>
+                        <td>{{ task.title|truncatechars:50 }}</td>
+                        <td class="text-nowrap">{{ task.budget_sats|default:0 }} sats</td>
                         <td>
-                            <span class="status-badge status-{{ task.state }}">
-                                {{ task.state }}
-                            </span>
+                            {% if task.state == 'completed' %}
+                            <span class="badge badge-success">Completed</span>
+                            {% elif task.state == 'running' %}
+                            <span class="badge badge-info">Running</span>
+                            {% elif task.state == 'pending' %}
+                            <span class="badge badge-warning">Pending</span>
+                            {% elif task.state == 'failed' %}
+                            <span class="badge badge-danger">Failed</span>
+                            {% else %}
+                            <span class="badge badge-secondary">{{ task.state }}</span>
+                            {% endif %}
                         </td>
-                        <td>{{ task.created_at|timesince }} ago</td>
+                        <td class="text-nowrap">{{ task.created_at|timesince }} ago</td>
                         <td>
-                            <a href="{% url 'super_admin:task_detail' task.id %}" class="btn-sm">View</a>
+                            <a href="{% url 'super_admin:task_detail' task.id %}" class="btn btn-sm btn-outline">View</a>
                         </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No tasks found</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        
-        <div class="recent-agents">
-            <h2>Recent Agents</h2>
+    </div>
+    
+    <!-- Recent Agents -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Agents</h3>
+            <a href="{% url 'super_admin:agents' %}" class="btn btn-outline">View All</a>
+        </div>
+        <div class="card-body">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -150,22 +190,90 @@
                 <tbody>
                     {% for agent in recent_agents %}
                     <tr>
-                        <td>{{ agent.name }}</td>
-                        <td>{{ agent.agent_type|upper }}</td>
+                        <td class="font-medium">{{ agent.name }}</td>
                         <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: {{ agent.trust_score|floatformat:2|add:'0' }}%"></div>
-                                <span>{{ agent.trust_score|floatformat:1 }}%</span>
+                            {% if agent.agent_type == 'ai' %}
+                            <span class="badge badge-info">AI Agent</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Human Agent</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ agent.trust_score|floatformat:0|default:0 }}%"></div>
+                                </div>
+                                <span class="progress-label">{{ agent.trust_score|floatformat:1|default:0 }}%</span>
                             </div>
                         </td>
                         <td>
                             {% if agent.is_active %}
-                            <span class="status-badge status-active">Active</span>
+                            <span class="badge badge-success">Active</span>
                             {% else %}
-                            <span class="status-badge status-inactive">Inactive</span>
+                            <span class="badge badge-danger">Inactive</span>
                             {% endif %}
                         </td>
-                        <td>{{ agent.last_heartbeat|timesince }} ago</td>
+                        <td class="text-nowrap">{{ agent.last_heartbeat|timesince|default:"Never" }} ago</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No agents found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Transactions</h3>
+            <a href="{% url 'super_admin:payments' %}" class="btn btn-outline">View All</a>
+        </div>
+        <div class="card-body">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in recent_transactions %}
+                    <tr>
+                        <td class="text-mono">{{ tx.id|slice:":8" }}</td>
+                        <td class="font-medium">{{ tx.amount_sats|default:0 }} sats</td>
+                        <td>
+                            {% if tx.type == 'deposit' %}
+                            <span class="badge badge-success">Deposit</span>
+                            {% elif tx.type == 'withdrawal' %}
+                            <span class="badge badge-warning">Withdrawal</span>
+                            {% elif tx.type == 'payment' %}
+                            <span class="badge badge-info">Payment</span>
+                            {% else %}
+                            <span class="badge badge-secondary">{{ tx.type }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if tx.status == 'completed' %}
+                            <span class="badge badge-success">Completed</span>
+                            {% elif tx.status == 'pending' %}
+                            <span class="badge badge-warning">Pending</span>
+                            {% elif tx.status == 'failed' %}
+                            <span class="badge badge-danger">Failed</span>
+                            {% else %}
+                            <span class="badge badge-secondary">{{ tx.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">{{ tx.created_at|timesince }} ago</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No transactions found</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -173,4 +281,61 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Additional dashboard-specific styles */
+    .progress-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .progress-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--border-light);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: var(--success);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        min-width: 40px;
+    }
+    
+    .stat-separator {
+        margin: 0 8px;
+        color: var(--border);
+    }
+    
+    .text-mono {
+        font-family: 'SF Mono', Monaco, monospace;
+        font-size: 12px;
+    }
+    
+    .text-nowrap {
+        white-space: nowrap;
+    }
+    
+    .text-center {
+        text-align: center;
+    }
+    
+    .font-medium {
+        font-weight: 500;
+    }
+    
+    .btn-sm {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+</style>
 {% endblock %}

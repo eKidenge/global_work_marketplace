@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agents | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="agents-container">
+    <div class="page-header">
+        <h1>Available Agents</h1>
+        <div class="header-actions">
+            <a href="{% url 'agents:agent_register' %}" class="btn btn-primary">Register Agent</a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-bar">
+        <form method="get" class="filters-form">
+            <select name="type" class="filter-select">
+                <option value="">All Types</option>
+                <option value="ai" {% if selected_type == 'ai' %}selected{% endif %}>AI Agents</option>
+                <option value="human" {% if selected_type == 'human' %}selected{% endif %}>Human Agents</option>
+            </select>
+            
+            <select name="capability" class="filter-select">
+                <option value="">All Capabilities</option>
+                {% for cap in capabilities %}
+                <option value="{{ cap.name }}" {% if request.GET.capability == cap.name %}selected{% endif %}>{{ cap.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <input type="text" name="search" placeholder="Search agents..." value="{{ search }}" class="search-input">
+            
+            <button type="submit" class="btn btn-secondary">Filter</button>
+        </form>
+        
+        <div class="stats-info">
+            <span>{{ total_agents }} agents total</span>
+            <span>{{ online_agents }} online now</span>
+        </div>
+    </div>
+    
+    <!-- Agents Grid -->
+    <div class="agents-grid">
+        {% for agent in agents %}
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-avatar">
+                    {% if agent.avatar %}
+                        <img src="{{ agent.avatar.url }}" alt="{{ agent.name }}">
+                    {% else %}
+                        <div class="avatar-placeholder">{{ agent.name|first|upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="agent-badge {{ agent.agent_type }}">
+                    {{ agent.get_agent_type_display }}
+                </div>
+            </div>
+            
+            <div class="agent-body">
+                <h3 class="agent-name">{{ agent.name }}</h3>
+                <p class="agent-description">{{ agent.description|truncatechars:100 }}</p>
+                
+                <div class="agent-capabilities">
+                    {% for cap in agent.capabilities|slice:":3" %}
+                    <span class="capability-tag">{{ cap }}</span>
+                    {% endfor %}
+                    {% if agent.capabilities|length > 3 %}
+                    <span class="capability-tag">+{{ agent.capabilities|length|add:"-3" }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="agent-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ agent.trust_score|floatformat:1 }}%</span>
+                        <span class="stat-label">Trust</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ agent.success_rate|floatformat:1 }}%</span>
+                        <span class="stat-label">Success</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ agent.total_tasks }}</span>
+                        <span class="stat-label">Tasks</span>
+                    </div>
+                </div>
+                
+                <div class="agent-status {% if agent.is_online %}online{% else %}offline{% endif %}">
+                    {% if agent.is_online %}● Online{% else %}● Offline{% endif %}
+                </div>
+            </div>
+            
+            <div class="agent-footer">
+                <a href="{% url 'agents:agent_detail' agent.id %}" class="btn btn-primary btn-block">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No agents found matching your criteria.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if agents.has_other_pages %}
+    <div class="pagination">
+        {% if agents.has_previous %}
+            <a href="?page={{ agents.previous_page_number }}" class="page-link">&laquo; Previous</a>
+        {% endif %}
+        
+        {% for num in agents.paginator.page_range %}
+            {% if agents.number == num %}
+                <span class="page-current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if agents.has_next %}
+            <a href="?page={{ agents.next_page_number }}" class="page-link">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

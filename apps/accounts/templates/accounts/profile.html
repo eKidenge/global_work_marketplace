@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+            {% else %}
+                <div class="avatar-placeholder">{{ user.username|first|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.get_full_name|default:user.username }}</h1>
+            <p class="email">{{ user.email }}</p>
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-value">{{ user.total_tasks|default:0 }}</span>
+                    <span class="stat-label">Tasks</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ user.total_spent|default:0 }}</span>
+                    <span class="stat-label">Sats Spent</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ user.rating|default:0|floatformat:1 }}</span>
+                    <span class="stat-label">Rating</span>
+                </div>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-secondary">Edit Profile</a>
+            <a href="{% url 'accounts:change_password' %}" class="btn btn-outline">Change Password</a>
+        </div>
+    </div>
+    
+    <div class="profile-tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="tasks">My Tasks</button>
+        <button class="tab-btn" data-tab="payments">Payments</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
+    </div>
+    
+    <div class="profile-content">
+        <div id="overview" class="tab-pane active">
+            <div class="info-section">
+                <h3>About Me</h3>
+                <p>{{ user.profile.bio|default:"No bio provided" }}</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>Contact Information</h3>
+                <ul class="info-list">
+                    <li><strong>Email:</strong> {{ user.email }}</li>
+                    <li><strong>Phone:</strong> {{ user.profile.phone_number|default:"Not provided" }}</li>
+                    <li><strong>Location:</strong> {{ user.profile.location|default:"Not provided" }}</li>
+                    <li><strong>Website:</strong> {% if user.profile.website %}<a href="{{ user.profile.website }}">{{ user.profile.website }}</a>{% else %}Not provided{% endif %}</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="tasks" class="tab-pane">
+            <h3>Recent Tasks</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Budget</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in recent_activity.tasks %}
+                    <tr>
+                        <td>{{ task.title|truncatechars:50 }}</td>
+                        <td>{{ task.budget_sats }} sats</td>
+                        <td><span class="status-badge status-{{ task.state }}">{{ task.state }}</span></td>
+                        <td>{{ task.created_at|date:"M d, Y" }}</td>
+                        <td><a href="{% url 'tasks:task_detail' task.id %}" class="btn-sm">View</a></td>
+                    </tr>
+                    {% empty %}
+                        <td>colspan="5">No tasks found</td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="payments" class="tab-pane">
+            <h3>Recent Transactions</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in recent_activity.transactions %}
+                    <tr>
+                        <td>{{ tx.type|title }}</td>
+                        <td>{{ tx.amount_sats }} sats</td>
+                        <td><span class="status-badge status-{{ tx.status }}">{{ tx.status }}</span></td>
+                        <td>{{ tx.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                        <td>colspan="4">No transactions found</td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="settings" class="tab-pane">
+            <form method="post" action="{% url 'accounts:settings' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="checkbox">
+                        <input type="checkbox" name="email_notifications" {% if user.email_notifications %}checked{% endif %}>
+                        Receive email notifications
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox">
+                        <input type="checkbox" name="push_notifications" {% if user.push_notifications %}checked{% endif %}>
+                        Receive push notifications
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

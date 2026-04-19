@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Webhook Endpoint{% endblock %}
+
+{% block content %}
+<div class="create-webhook">
+    <div class="page-header">
+        <h1>Create Webhook Endpoint</h1>
+        <p>Configure a URL to receive real-time events</p>
+    </div>
+    
+    <div class="webhook-form-container">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="url">Endpoint URL</label>
+                <input type="url" name="url" id="url" class="form-control" required placeholder="https://your-domain.com/webhook">
+                <small>We'll send POST requests to this URL</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Subscribe to Events</label>
+                <div class="events-checkboxes">
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="task.created"> Task Created
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="task.completed"> Task Completed
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="task.failed"> Task Failed
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="agent.online"> Agent Online
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="agent.offline"> Agent Offline
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="payment.received"> Payment Received
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="payment.sent"> Payment Sent
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="verification.approved"> Verification Approved
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="events" value="verification.rejected"> Verification Rejected
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="secret">Secret (Optional)</label>
+                <input type="text" name="secret" id="secret" class="form-control" placeholder="Leave blank to auto-generate">
+                <small>Used to verify webhook signatures</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Create Endpoint</button>
+                <a href="{% url 'webhooks:endpoints' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="info-section">
+        <h3>What are webhooks?</h3>
+        <p>Webhooks allow your application to receive real-time notifications when events happen in the marketplace.</p>
+        
+        <h4>Security</h4>
+        <p>We'll send a signature in the <code>X-Webhook-Signature</code> header. Verify it using your secret key.</p>
+        
+        <h4>Retries</h4>
+        <p>Failed deliveries will be retried up to 3 times.</p>
+    </div>
+</div>
+{% endblock %}

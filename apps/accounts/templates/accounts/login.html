@@ -1,0 +1,1664 @@
+<!-- accounts/login.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Secure Authentication | Global Work Marketplace{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ========================================================================
+       ENTERPRISE GRADE LOGIN STYLES
+       Version: 3.0.0
+       Security Level: Maximum
+       Build: Production Ready
+       ======================================================================== */
+    
+    /* ========== CSS RESET & BASE ========== */
+    *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    /* ========== DESIGN SYSTEM TOKENS ========== */
+    :root {
+        /* Color System - Primary */
+        --primary-50: #eef2ff;
+        --primary-100: #e0e7ff;
+        --primary-200: #c7d2fe;
+        --primary-300: #a5b4fc;
+        --primary-400: #818cf8;
+        --primary-500: #6366f1;
+        --primary-600: #4f46e5;
+        --primary-700: #4338ca;
+        --primary-800: #3730a3;
+        --primary-900: #312e81;
+        --primary-950: #1e1b4b;
+        
+        /* Color System - Accent */
+        --accent-50: #ecfdf5;
+        --accent-100: #d1fae5;
+        --accent-200: #a7f3d0;
+        --accent-300: #6ee7b7;
+        --accent-400: #34d399;
+        --accent-500: #10b981;
+        --accent-600: #059669;
+        --accent-700: #047857;
+        --accent-800: #065f46;
+        --accent-900: #064e3b;
+        
+        /* Color System - Neutral */
+        --neutral-50: #f9fafb;
+        --neutral-100: #f3f4f6;
+        --neutral-200: #e5e7eb;
+        --neutral-300: #d1d5db;
+        --neutral-400: #9ca3af;
+        --neutral-500: #6b7280;
+        --neutral-600: #4b5563;
+        --neutral-700: #374151;
+        --neutral-800: #1f2937;
+        --neutral-900: #111827;
+        
+        /* Color System - Semantic */
+        --success: #10b981;
+        --success-dark: #059669;
+        --success-light: #d1fae5;
+        --error: #ef4444;
+        --error-dark: #dc2626;
+        --error-light: #fee2e2;
+        --warning: #f59e0b;
+        --warning-dark: #d97706;
+        --warning-light: #fed7aa;
+        --info: #3b82f6;
+        --info-dark: #2563eb;
+        --info-light: #dbeafe;
+        
+        /* Typography */
+        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+        
+        /* Spacing System */
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+        --space-16: 4rem;
+        --space-20: 5rem;
+        --space-24: 6rem;
+        
+        /* Shadows */
+        --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        
+        /* Border Radius */
+        --radius-none: 0;
+        --radius-sm: 0.125rem;
+        --radius-md: 0.375rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-2xl: 1rem;
+        --radius-3xl: 1.5rem;
+        --radius-full: 9999px;
+        
+        /* Transitions */
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        
+        /* Z-Index Layers */
+        --z-negative: -1;
+        --z-elevate: 1;
+        --z-sticky: 10;
+        --z-header: 20;
+        --z-overlay: 30;
+        --z-modal: 40;
+        --z-popover: 50;
+        --z-toast: 60;
+        --z-tooltip: 70;
+    }
+    
+    /* ========== ANIMATIONS ========== */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    @keyframes glow {
+        0%, 100% {
+            box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
+        }
+        50% {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+    }
+    
+    @keyframes borderGlow {
+        0%, 100% {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        50% {
+            border-color: rgba(99, 102, 241, 0.8);
+        }
+    }
+    
+    /* ========== BASE STYLES ========== */
+    body {
+        font-family: var(--font-sans);
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        min-height: 100vh;
+        color: #ffffff;
+        line-height: 1.5;
+        font-size: 16px;
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
+    
+    /* ========== ANIMATED BACKGROUND ========== */
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: var(--z-negative);
+        overflow: hidden;
+    }
+    
+    .bg-gradient::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+        animation: fadeIn 1s ease-out;
+    }
+    
+    .bg-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .particle {
+        position: absolute;
+        background: rgba(99, 102, 241, 0.4);
+        border-radius: 50%;
+        pointer-events: none;
+        animation: float 20s infinite linear;
+    }
+    
+    .particle:nth-child(1) { width: 3px; height: 3px; top: 10%; left: 20%; animation-duration: 15s; animation-delay: 0s; }
+    .particle:nth-child(2) { width: 4px; height: 4px; top: 30%; left: 70%; animation-duration: 18s; animation-delay: 2s; }
+    .particle:nth-child(3) { width: 2px; height: 2px; top: 50%; left: 85%; animation-duration: 12s; animation-delay: 4s; }
+    .particle:nth-child(4) { width: 5px; height: 5px; top: 70%; left: 15%; animation-duration: 20s; animation-delay: 1s; }
+    .particle:nth-child(5) { width: 3px; height: 3px; top: 85%; left: 45%; animation-duration: 16s; animation-delay: 3s; }
+    .particle:nth-child(6) { width: 6px; height: 6px; top: 15%; left: 55%; animation-duration: 22s; animation-delay: 5s; }
+    .particle:nth-child(7) { width: 2px; height: 2px; top: 45%; left: 10%; animation-duration: 14s; animation-delay: 7s; }
+    .particle:nth-child(8) { width: 4px; height: 4px; top: 65%; left: 90%; animation-duration: 19s; animation-delay: 2s; }
+    .particle:nth-child(9) { width: 3px; height: 3px; top: 25%; left: 40%; animation-duration: 17s; animation-delay: 6s; }
+    .particle:nth-child(10) { width: 5px; height: 5px; top: 75%; left: 60%; animation-duration: 21s; animation-delay: 4s; }
+    .particle:nth-child(11) { width: 2px; height: 2px; top: 5%; left: 95%; animation-duration: 13s; animation-delay: 8s; }
+    .particle:nth-child(12) { width: 4px; height: 4px; top: 55%; left: 30%; animation-duration: 24s; animation-delay: 1s; }
+    .particle:nth-child(13) { width: 3px; height: 3px; top: 80%; left: 75%; animation-duration: 11s; animation-delay: 9s; }
+    .particle:nth-child(14) { width: 6px; height: 6px; top: 35%; left: 5%; animation-duration: 23s; animation-delay: 3s; }
+    .particle:nth-child(15) { width: 2px; height: 2px; top: 90%; left: 50%; animation-duration: 15s; animation-delay: 5s; }
+    
+    /* ========== MAIN CONTAINER ========== */
+    .login-wrapper {
+        display: flex;
+        min-height: 100vh;
+        position: relative;
+        z-index: var(--z-elevate);
+    }
+    
+    /* ========== LEFT PANEL - BRAND SECTION ========== */
+    .brand-section {
+        flex: 1.2;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        padding: var(--space-12);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        position: relative;
+        overflow-y: auto;
+    }
+    
+    .brand-section::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .brand-section::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .brand-section::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-full);
+    }
+    
+    /* Logo Section */
+    .logo-container {
+        margin-bottom: var(--space-16);
+        animation: fadeInLeft 0.8s ease-out;
+    }
+    
+    .logo-mark {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+        border-radius: var(--radius-2xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--space-6);
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .logo-mark span {
+        font-size: 32px;
+        font-weight: 700;
+    }
+    
+    .logo-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--space-2);
+        line-height: 1.2;
+    }
+    
+    .logo-subtitle {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.5px;
+    }
+    
+    /* Value Proposition */
+    .value-prop {
+        margin-bottom: var(--space-16);
+        animation: fadeInRight 0.8s ease-out;
+    }
+    
+    .value-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: var(--space-6);
+        color: #ffffff;
+    }
+    
+    .value-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+    }
+    
+    .value-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-4);
+        padding: var(--space-4);
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: var(--radius-xl);
+        transition: all var(--transition-base);
+    }
+    
+    .value-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateX(8px);
+    }
+    
+    .value-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(99, 102, 241, 0.2);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    
+    .value-content h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: var(--space-1);
+        color: #ffffff;
+    }
+    
+    .value-content p {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        margin-top: auto;
+        padding-top: var(--space-8);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-6);
+        margin-bottom: var(--space-8);
+    }
+    
+    .stat {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--primary-400);
+        margin-bottom: var(--space-1);
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .trust-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        justify-content: center;
+    }
+    
+    .trust-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* ========== RIGHT PANEL - LOGIN FORM ========== */
+    .form-section {
+        flex: 0.8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-8);
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(20px);
+    }
+    
+    .login-card {
+        max-width: 440px;
+        width: 100%;
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-3xl);
+        padding: var(--space-10);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow-2xl);
+        transition: all var(--transition-slow);
+        animation: scaleIn 0.6s ease-out;
+    }
+    
+    .login-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        border-color: rgba(99, 102, 241, 0.3);
+    }
+    
+    /* Card Header */
+    .card-header {
+        text-align: center;
+        margin-bottom: var(--space-8);
+    }
+    
+    .card-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: var(--space-2);
+        background: linear-gradient(135deg, #ffffff, var(--primary-400));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .card-header p {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Alert Messages */
+    .alert-container {
+        margin-bottom: var(--space-6);
+    }
+    
+    .alert {
+        padding: var(--space-4) var(--space-5);
+        border-radius: var(--radius-xl);
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        font-size: 0.875rem;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 3px solid var(--error);
+        color: #fca5a5;
+    }
+    
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border-left: 3px solid var(--success);
+        color: #6ee7b7;
+    }
+    
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.1);
+        border-left: 3px solid var(--warning);
+        color: #fcd34d;
+    }
+    
+    .alert-info {
+        background: rgba(59, 130, 246, 0.1);
+        border-left: 3px solid var(--info);
+        color: #93c5fd;
+    }
+    
+    .alert-icon {
+        font-size: 1.25rem;
+    }
+    
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        font-size: 1.25rem;
+        opacity: 0.7;
+        transition: opacity var(--transition-fast);
+    }
+    
+    .alert-close:hover {
+        opacity: 1;
+    }
+    
+    /* Login Form */
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+    }
+    
+    /* Form Groups */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+    
+    .form-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .input-container {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.4);
+        transition: color var(--transition-fast);
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-xl);
+        color: #ffffff;
+        font-size: 0.9375rem;
+        transition: all var(--transition-base);
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .form-input:focus + .input-icon {
+        color: var(--primary-400);
+    }
+    
+    .form-input::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Password Toggle */
+    .password-toggle {
+        position: absolute;
+        right: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        font-size: 1rem;
+        transition: color var(--transition-fast);
+    }
+    
+    .password-toggle:hover {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Form Options */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--space-2);
+    }
+    
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        cursor: pointer;
+        font-size: 0.8125rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .checkbox-container input {
+        width: 1rem;
+        height: 1rem;
+        cursor: pointer;
+        accent-color: var(--primary-500);
+    }
+    
+    .forgot-link {
+        font-size: 0.8125rem;
+        color: var(--primary-400);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+    
+    .forgot-link:hover {
+        color: var(--primary-300);
+        text-decoration: underline;
+    }
+    
+    /* Submit Button */
+    .submit-btn {
+        width: 100%;
+        padding: var(--space-4);
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        border: none;
+        border-radius: var(--radius-xl);
+        color: #ffffff;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .submit-btn:hover::before {
+        left: 100%;
+    }
+    
+    .submit-btn:hover {
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+    
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+    
+    .submit-btn.loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    .submit-btn.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    /* Divider */
+    .divider {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        margin: var(--space-6) 0;
+    }
+    
+    .divider-line {
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .divider-text {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+    }
+    
+    /* Social Login */
+    .social-login {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-xl);
+        color: #ffffff;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-base);
+    }
+    
+    .social-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .social-icon {
+        font-size: 1.25rem;
+    }
+    
+    /* Register Link */
+    .register-link {
+        text-align: center;
+        margin-top: var(--space-8);
+        padding-top: var(--space-6);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .register-link p {
+        font-size: 0.8125rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .register-link a {
+        color: var(--primary-400);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color var(--transition-fast);
+    }
+    
+    .register-link a:hover {
+        color: var(--primary-300);
+        text-decoration: underline;
+    }
+    
+    /* Security Notice */
+    .security-notice {
+        margin-top: var(--space-6);
+        padding: var(--space-4);
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--radius-xl);
+        text-align: center;
+        border-left: 3px solid var(--primary-500);
+    }
+    
+    .security-notice p {
+        font-size: 0.6875rem;
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.5;
+    }
+    
+    .security-notice a {
+        color: var(--primary-400);
+        text-decoration: none;
+    }
+    
+    /* ========== FOOTER ========== */
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        padding: var(--space-3) var(--space-6);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: var(--z-header);
+    }
+    
+    .footer-content {
+        max-width: 1280px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+    }
+    
+    .footer-links {
+        display: flex;
+        gap: var(--space-6);
+        flex-wrap: wrap;
+    }
+    
+    .footer-links a {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+    
+    .footer-links a:hover {
+        color: var(--primary-400);
+    }
+    
+    .footer-copyright {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .footer-status {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+    }
+    
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: 0.6875rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    /* ========== TOOLTIPS ========== */
+    .tooltip {
+        position: relative;
+        cursor: help;
+    }
+    
+    .tooltip:hover::after {
+        content: attr(data-tip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: #ffffff;
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--radius-lg);
+        font-size: 0.75rem;
+        white-space: nowrap;
+        z-index: var(--z-tooltip);
+        pointer-events: none;
+        margin-bottom: var(--space-2);
+    }
+    
+    /* ========== RESPONSIVE DESIGN ========== */
+    @media (max-width: 1024px) {
+        .brand-section {
+            flex: 1;
+            padding: var(--space-8);
+        }
+        
+        .form-section {
+            flex: 1;
+        }
+        
+        .logo-title {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            gap: var(--space-4);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .login-wrapper {
+            flex-direction: column;
+        }
+        
+        .brand-section {
+            display: none;
+        }
+        
+        .form-section {
+            flex: 1;
+            padding: var(--space-6);
+        }
+        
+        .login-card {
+            max-width: 100%;
+            padding: var(--space-6);
+        }
+        
+        .footer-content {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .footer-links {
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .login-card {
+            padding: var(--space-5);
+        }
+        
+        .card-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .form-options {
+            flex-direction: column;
+            gap: var(--space-3);
+            align-items: flex-start;
+        }
+        
+        .social-login {
+            gap: var(--space-2);
+        }
+        
+        .social-btn {
+            padding: var(--space-2) var(--space-3);
+        }
+    }
+    
+    /* ========== PRINT STYLES ========== */
+    @media print {
+        .bg-gradient,
+        .bg-particles,
+        .footer,
+        .social-login,
+        .security-notice {
+            display: none;
+        }
+        
+        .login-card {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+    }
+    
+    /* ========== ACCESSIBILITY ========== */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+    
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+    
+    /* ========== FOCUS STYLES ========== */
+    :focus-visible {
+        outline: 2px solid var(--primary-500);
+        outline-offset: 2px;
+    }
+    
+    /* ========== SELECTION STYLES ========== */
+    ::selection {
+        background: var(--primary-500);
+        color: #ffffff;
+    }
+    
+    /* ========== SCROLLBAR STYLES ========== */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-full);
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="bg-gradient">
+        <div class="bg-particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+    
+    <!-- Left Panel - Brand Section -->
+    <div class="brand-section">
+        <div class="logo-container">
+            <div class="logo-mark">
+                <span>⚡</span>
+            </div>
+            <h1 class="logo-title">Global Work<br>Marketplace</h1>
+            <p class="logo-subtitle">Enterprise Edition · Economic Operating System</p>
+        </div>
+        
+        <div class="value-prop">
+            <h2 class="value-title">The Future of Work</h2>
+            <div class="value-list">
+                <div class="value-item">
+                    <div class="value-icon">🤖</div>
+                    <div class="value-content">
+                        <h4>AI + Human Collaboration</h4>
+                        <p>Seamless integration between artificial and human intelligence</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon">⚡</div>
+                    <div class="value-content">
+                        <h4>Real-Time Execution</h4>
+                        <p>Tasks routed and executed in milliseconds</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon">💰</div>
+                    <div class="value-content">
+                        <h4>Lightning Payments</h4>
+                        <p>Instant settlements via Bitcoin Lightning Network</p>
+                    </div>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon">🔒</div>
+                    <div class="value-content">
+                        <h4>Enterprise Security</h4>
+                        <p>SOC 2 Type II certified, 256-bit encryption</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Tasks Completed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Active Agents</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime SLA</div>
+                </div>
+            </div>
+            <div class="trust-badges">
+                <span class="trust-badge">🔒 SOC 2 Type II</span>
+                <span class="trust-badge">🔐 GDPR Compliant</span>
+                <span class="trust-badge">⚡ Lightning Ready</span>
+                <span class="trust-badge">🛡️ ISO 27001</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Panel - Login Form -->
+    <div class="form-section">
+        <div class="login-card">
+            <div class="card-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your workspace</p>
+            </div>
+            
+            {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span class="alert-icon">
+                        {% if message.tags == 'error' %}⚠️
+                        {% elif message.tags == 'success' %}✅
+                        {% elif message.tags == 'warning' %}⚠️
+                        {% else %}ℹ️{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                    <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" class="login-form" id="loginForm" autocomplete="off" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-container">
+                        <span class="input-icon">📧</span>
+                        <input type="email" id="email" name="email" class="form-input" 
+                               placeholder="name@company.com" required autocomplete="off"
+                               aria-label="Email address">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-container">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" name="password" class="form-input" 
+                               placeholder="Enter your password" required autocomplete="off"
+                               aria-label="Password">
+                        <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Show password">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="remember" id="rememberCheckbox">
+                        <span>Remember this device</span>
+                    </label>
+                    <a href="{% url 'accounts:password_reset' %}" class="forgot-link">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="loginButton">
+                    Sign In
+                </button>
+                
+                <div class="divider">
+                    <span class="divider-line"></span>
+                    <span class="divider-text">Or continue with</span>
+                    <span class="divider-line"></span>
+                </div>
+                
+                <div class="social-login">
+                    <button type="button" class="social-btn" onclick="socialLogin('google')">
+                        <span class="social-icon">G</span>
+                        <span>Sign in with Google</span>
+                    </button>
+                    <button type="button" class="social-btn" onclick="socialLogin('github')">
+                        <span class="social-icon">GH</span>
+                        <span>Sign in with GitHub</span>
+                    </button>
+                </div>
+                
+                <div class="register-link">
+                    <p>Don't have an account? <a href="{% url 'accounts:register' %}">Request Access</a></p>
+                </div>
+                
+                <div class="security-notice">
+                    <p>🔒 All authentication attempts are logged and monitored.<br>
+                    <a href="/security">Security Policy</a> | <a href="/privacy">Privacy Notice</a> | <a href="/terms">Terms of Service</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-links">
+            <a href="/about">About</a>
+            <a href="/security">Security</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/compliance">Compliance</a>
+            <a href="/support">Support</a>
+            <a href="/status">System Status</a>
+            <a href="/security/report">Report Vulnerability</a>
+        </div>
+        <div class="footer-copyright">
+            &copy; 2024 Global Work Marketplace, Inc. All rights reserved.
+        </div>
+        <div class="footer-status">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>All Systems Operational</span>
+            </div>
+            <div class="status-indicator">
+                <span>🔒 Secure Connection • TLS 1.3</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Security JavaScript -->
+<script>
+    // ========================================================================
+    // ENTERPRISE SECURITY & VALIDATION
+    // Version: 3.0.0
+    // Build: Production
+    // ========================================================================
+    
+    (function() {
+        'use strict';
+        
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const rememberCheckbox = document.getElementById('rememberCheckbox');
+        
+        // Security Variables
+        let attemptCount = 0;
+        let lastAttemptTime = 0;
+        const MAX_ATTEMPTS = 5;
+        const LOCKOUT_TIME = 300000; // 5 minutes
+        let isLockedOut = false;
+        let lockoutTimer = null;
+        
+        // Session Management
+        let sessionTimer = null;
+        let sessionTimeLeft = 900; // 15 minutes
+        
+        // Device Fingerprint
+        function generateDeviceFingerprint() {
+            const fingerprint = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                platform: navigator.platform,
+                screenResolution: `${screen.width}x${screen.height}`,
+                colorDepth: screen.colorDepth,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                touchSupport: 'ontouchstart' in window,
+                localStorage: !!window.localStorage,
+                sessionStorage: !!window.sessionStorage,
+                cookiesEnabled: navigator.cookieEnabled,
+                hardwareConcurrency: navigator.hardwareConcurrency || 0,
+                deviceMemory: navigator.deviceMemory || 0,
+                doNotTrack: navigator.doNotTrack || 'unspecified'
+            };
+            
+            // Add canvas fingerprint
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(0, 0, 100, 100);
+                ctx.fillStyle = '#069';
+                ctx.fillText('GWM', 10, 10);
+                fingerprint.canvasHash = canvas.toDataURL();
+            } catch(e) {
+                fingerprint.canvasHash = 'unsupported';
+            }
+            
+            return btoa(JSON.stringify(fingerprint));
+        }
+        
+        // Rate Limiting Check
+        function checkRateLimit() {
+            if (isLockedOut) {
+                showError('Account temporarily locked. Please try again later.', 'error');
+                return false;
+            }
+            
+            const now = Date.now();
+            if (now - lastAttemptTime < 5000) {
+                attemptCount++;
+                if (attemptCount >= MAX_ATTEMPTS) {
+                    isLockedOut = true;
+                    showError(`Too many failed attempts. Account locked for 5 minutes.`, 'error');
+                    loginButton.disabled = true;
+                    
+                    lockoutTimer = setTimeout(() => {
+                        isLockedOut = false;
+                        attemptCount = 0;
+                        loginButton.disabled = false;
+                        showError('Account unlocked. You may try again.', 'success');
+                    }, LOCKOUT_TIME);
+                    
+                    return false;
+                }
+            } else {
+                attemptCount = 1;
+            }
+            lastAttemptTime = now;
+            return true;
+        }
+        
+        // Show Error Message
+        function showError(message, type = 'error') {
+            const alertContainer = document.querySelector('.alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <span class="alert-icon">${type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️'}</span>
+                <span>${message}</span>
+                <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+            alertContainer.insertBefore(alert, alertContainer.firstChild);
+            
+            setTimeout(() => {
+                if (alert.parentElement) alert.remove();
+            }, 5000);
+        }
+        
+        // Validate Email
+        function validateEmail(email) {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address.', 'error');
+                emailInput.focus();
+                return false;
+            }
+            return true;
+        }
+        
+        // Validate Password
+        function validatePassword(password) {
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters.', 'error');
+                passwordInput.focus();
+                return false;
+            }
+            return true;
+        }
+        
+        // Set Loading State
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginButton.classList.add('loading');
+                loginButton.disabled = true;
+                loginButton.textContent = 'Authenticating...';
+            } else {
+                loginButton.classList.remove('loading');
+                loginButton.disabled = false;
+                loginButton.textContent = 'Sign In';
+            }
+        }
+        
+        // Toggle Password Visibility
+        window.togglePassword = function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        };
+        
+        // Social Login
+        window.socialLogin = function(provider) {
+            window.location.href = `/accounts/social/${provider}/`;
+        };
+        
+        // Add Security Headers
+        function addSecurityHeaders() {
+            const securityToken = document.createElement('input');
+            securityToken.type = 'hidden';
+            securityToken.name = 'security_token';
+            securityToken.value = btoa(JSON.stringify({
+                timestamp: Date.now(),
+                fingerprint: generateDeviceFingerprint(),
+                screenResolution: `${screen.width}x${screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                pageLoadTime: performance.timing?.navigationStart || Date.now()
+            }));
+            loginForm.appendChild(securityToken);
+        }
+        
+        // Session Management
+        function startSessionTimer() {
+            if (sessionTimer) clearInterval(sessionTimer);
+            
+            sessionTimer = setInterval(() => {
+                sessionTimeLeft--;
+                if (sessionTimeLeft <= 0) {
+                    clearInterval(sessionTimer);
+                    showError('Session expired. Please refresh the page.', 'warning');
+                }
+            }, 1000);
+        }
+        
+        // Clear Sensitive Data
+        function clearSensitiveData() {
+            if (passwordInput) {
+                passwordInput.value = '';
+            }
+        }
+        
+        // Log Security Event
+        function logSecurityEvent(event, data = {}) {
+            console.log(`[SECURITY] ${event}`, {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                ...data
+            });
+        }
+        
+        // Prevent Console Injection
+        function preventConsoleInjection() {
+            const consoleMethods = ['log', 'info', 'warn', 'error', 'debug'];
+            consoleMethods.forEach(method => {
+                const original = console[method];
+                console[method] = function() {
+                    if (window.__SECURITY_CHECK__) {
+                        original.apply(console, arguments);
+                    }
+                };
+            });
+            window.__SECURITY_CHECK__ = true;
+        }
+        
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Shift+L - Focus Email
+            if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+                e.preventDefault();
+                emailInput.focus();
+            }
+            // Ctrl+Shift+P - Focus Password
+            if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+                e.preventDefault();
+                passwordInput.focus();
+            }
+            // Ctrl+Shift+S - Submit Form
+            if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                e.preventDefault();
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // Form Submission Handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Rate limit check
+            if (!checkRateLimit()) return;
+            
+            // Validate inputs
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!validateEmail(email)) return;
+            if (!validatePassword(password)) return;
+            
+            // Set loading state
+            setLoading(true);
+            
+            // Add security headers
+            addSecurityHeaders();
+            
+            // Add device fingerprint
+            const fingerprintInput = document.createElement('input');
+            fingerprintInput.type = 'hidden';
+            fingerprintInput.name = 'device_fingerprint';
+            fingerprintInput.value = generateDeviceFingerprint();
+            loginForm.appendChild(fingerprintInput);
+            
+            // Add timestamp
+            const timestampInput = document.createElement('input');
+            timestampInput.type = 'hidden';
+            timestampInput.name = 'request_timestamp';
+            timestampInput.value = Date.now().toString();
+            loginForm.appendChild(timestampInput);
+            
+            // Log attempt
+            logSecurityEvent('Login attempt', { email: email.substring(0, 3) + '***' });
+            
+            // Submit form
+            try {
+                loginForm.submit();
+            } catch (error) {
+                setLoading(false);
+                showError('Authentication failed. Please try again.', 'error');
+                logSecurityEvent('Login error', { error: error.message });
+            }
+        });
+        
+        // Clear sensitive data on page unload
+        window.addEventListener('beforeunload', () => {
+            clearSensitiveData();
+            logSecurityEvent('Page unload');
+        });
+        
+        // Visibility change detection
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                logSecurityEvent('Page hidden');
+            } else {
+                logSecurityEvent('Page visible');
+            }
+        });
+        
+        // Initialize
+        function init() {
+            startSessionTimer();
+            preventConsoleInjection();
+            logSecurityEvent('Login page loaded');
+            
+            // Focus on email input
+            setTimeout(() => {
+                emailInput.focus();
+            }, 100);
+        }
+        
+        // Start initialization
+        init();
+        
+    })();
+</script>
+{% endblock %}

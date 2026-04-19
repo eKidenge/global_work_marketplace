@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Disputes | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="disputes-container">
+    <div class="page-header">
+        <h1>Disputes</h1>
+        <a href="{% url 'verification:leaderboard' %}" class="btn btn-secondary">View Leaderboard</a>
+    </div>
+    
+    <div class="status-tabs">
+        <a href="?status=open" class="tab {% if request.GET.status == 'open' %}active{% endif %}">Open ({{ status_counts.open }})</a>
+        <a href="?status=investigating" class="tab {% if request.GET.status == 'investigating' %}active{% endif %}">Investigating ({{ status_counts.investigating }})</a>
+        <a href="?status=resolved" class="tab {% if request.GET.status == 'resolved' %}active{% endif %}">Resolved ({{ status_counts.resolved }})</a>
+    </div>
+    
+    <div class="disputes-list">
+        {% for dispute in disputes %}
+        <div class="dispute-card">
+            <div class="dispute-header">
+                <div class="dispute-id">#{{ dispute.id|slice:":8" }}</div>
+                <div class="dispute-status status-{{ dispute.status }}">{{ dispute.status|title }}</div>
+            </div>
+            <div class="dispute-body">
+                <div class="dispute-task">
+                    <strong>Task:</strong> <a href="{% url 'tasks:task_detail' dispute.task.id %}">{{ dispute.task.title }}</a>
+                </div>
+                <div class="dispute-reason">
+                    <strong>Reason:</strong> {{ dispute.get_reason_display }}
+                </div>
+                <div class="dispute-description">
+                    {{ dispute.description|truncatechars:150 }}
+                </div>
+                <div class="dispute-meta">
+                    <span>Raised by: {{ dispute.raised_by.username }}</span>
+                    <span>{{ dispute.created_at|timesince }} ago</span>
+                </div>
+            </div>
+            <div class="dispute-footer">
+                <a href="{% url 'verification:dispute_detail' dispute.id %}" class="btn-sm">View Details</a>
+                {% if dispute.status != 'resolved' %}
+                    <a href="{% url 'verification:respond_dispute' dispute.id %}" class="btn-sm btn-primary">Respond</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">No disputes found</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

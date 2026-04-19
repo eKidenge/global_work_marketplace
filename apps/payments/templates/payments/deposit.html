@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Deposit Funds | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="deposit-container">
+    <div class="page-header">
+        <h1>Deposit Funds</h1>
+        <p>Add sats to your wallet</p>
+    </div>
+    
+    <div class="deposit-grid">
+        <div class="deposit-form-card">
+            <h3>Select Amount</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="amount-presets">
+                    <button type="button" class="preset-btn" data-amount="10000">10,000 sats</button>
+                    <button type="button" class="preset-btn" data-amount="50000">50,000 sats</button>
+                    <button type="button" class="preset-btn" data-amount="100000">100,000 sats</button>
+                    <button type="button" class="preset-btn" data-amount="500000">500,000 sats</button>
+                    <button type="button" class="preset-btn" data-amount="1000000">1,000,000 sats</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount_sats">Custom Amount (sats)</label>
+                    <input type="number" name="amount_sats" id="amount_sats" class="form-control" min="1000" step="1000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_method">Payment Method</label>
+                    <select name="payment_method" id="payment_method" class="form-control">
+                        <option value="lightning">Lightning Network (Instant)</option>
+                        <option value="onchain">Bitcoin On-chain</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Generate Invoice</button>
+            </form>
+        </div>
+        
+        <div class="deposit-info-card">
+            <h3>Lightning Network</h3>
+            <p>Deposits via Lightning Network are instant and have minimal fees.</p>
+            
+            <h3>Bitcoin On-chain</h3>
+            <p>On-chain deposits may take 10-60 minutes to confirm.</p>
+            
+            <div class="info-note">
+                <strong>Note:</strong> Minimum deposit is 1,000 sats.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('amount_sats').value = btn.dataset.amount;
+        });
+    });
+</script>
+{% endblock %}

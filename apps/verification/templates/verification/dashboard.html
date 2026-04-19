@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Dashboard{% endblock %}
+
+{% block content %}
+<div class="verification-dashboard">
+    <div class="page-header">
+        <h1>Verification Dashboard</h1>
+        <p>Task quality assurance and agent reputation</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ pending_verifications }}</div>
+            <div class="stat-label">Pending Verification</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ approved_today }}</div>
+            <div class="stat-label">Approved Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ rejected_today }}</div>
+            <div class="stat-label">Rejected Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ avg_quality_score|floatformat:1 }}%</div>
+            <div class="stat-label">Avg Quality Score</div>
+        </div>
+    </div>
+    
+    <div class="recent-verifications">
+        <h3>Recent Verifications</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Type</th>
+                    <th>Quality Score</th>
+                    <th>Status</th>
+                    <th>Verified At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for verif in recent_verifications %}
+                <tr>
+                    <td><a href="{% url 'tasks:task_detail' verif.task.id %}">{{ verif.task.title|truncatechars:40 }}</a></td>
+                    <td>{{ verif.verification_type|title }}</td>
+                    <td>
+                        <div class="progress-bar small">
+                            <div class="progress-fill" style="width: {{ verif.quality_score|floatformat:0 }}%"></div>
+                        </div>
+                        {{ verif.quality_score|floatformat:1 }}%
+                    </td>
+                    <td><span class="status-badge status-{{ verif.status }}">{{ verif.status }}</span></td>
+                    <td>{{ verif.verified_at|date:"M d, H:i"|default:"-" }}</td>
+                    <td><a href="{% url 'verification:review' verif.id %}" class="btn-sm">Review</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No verifications yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

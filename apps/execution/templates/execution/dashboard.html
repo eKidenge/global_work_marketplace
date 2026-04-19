@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Execution Dashboard{% endblock %}
+
+{% block content %}
+<div class="execution-dashboard">
+    <div class="page-header">
+        <h1>Execution Dashboard</h1>
+        <p>Monitor real-time task executions</p>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ active_executions }}</div>
+            <div class="stat-label">Active Executions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ pending_executions }}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ completed_today }}</div>
+            <div class="stat-label">Completed Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ avg_execution_time|floatformat:0 }} ms</div>
+            <div class="stat-label">Avg Execution Time</div>
+        </div>
+    </div>
+    
+    <!-- Execution by Type -->
+    <div class="execution-types">
+        <h3>Executions by Type</h3>
+        <div class="type-stats">
+            <div class="type-stat ai">
+                <span class="type-label">AI</span>
+                <span class="type-count">{{ executions_by_type.ai }}</span>
+            </div>
+            <div class="type-stat human">
+                <span class="type-label">Human</span>
+                <span class="type-count">{{ executions_by_type.human }}</span>
+            </div>
+            <div class="type-stat hybrid">
+                <span class="type-label">Hybrid</span>
+                <span class="type-count">{{ executions_by_type.hybrid }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Executions -->
+    <div class="recent-executions">
+        <h3>Recent Executions</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Agent</th>
+                    <th>Type</th>
+                    <th>State</th>
+                    <th>Duration</th>
+                    <th>Started</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exec in recent_executions %}
+                <tr>
+                    <td><a href="{% url 'tasks:task_detail' exec.task.id %}">{{ exec.task.title|truncatechars:40 }}</a></td>
+                    <td>{{ exec.agent.name }}</td>
+                    <td><span class="badge {{ exec.execution_type }}">{{ exec.execution_type|upper }}</span></td>
+                    <td><span class="status-badge status-{{ exec.state }}">{{ exec.state }}</span></td>
+                    <td>{{ exec.duration_ms|default:"-" }} ms</td>
+                    <td>{{ exec.started_at|date:"M d, H:i"|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'execution:detail' exec.id %}" class="btn-sm">View</a>
+                        {% if exec.state == 'running' %}
+                            <a href="{% url 'execution:pause' exec.id %}" class="btn-sm btn-warning">Pause</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No executions yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

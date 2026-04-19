@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Support Tickets{% endblock %}
+
+{% block content %}
+<div class="tickets-container">
+    <div class="page-header">
+        <h1>Support Tickets</h1>
+        <a href="{% url 'support:create_ticket' %}" class="btn btn-primary">Create Ticket</a>
+    </div>
+    
+    <div class="status-tabs">
+        <a href="?status=open" class="tab {% if request.GET.status == 'open' %}active{% endif %}">Open ({{ status_counts.open }})</a>
+        <a href="?status=in_progress" class="tab {% if request.GET.status == 'in_progress' %}active{% endif %}">In Progress ({{ status_counts.in_progress }})</a>
+        <a href="?status=resolved" class="tab {% if request.GET.status == 'resolved' %}active{% endif %}">Resolved ({{ status_counts.resolved }})</a>
+        <a href="?status=closed" class="tab {% if request.GET.status == 'closed' %}active{% endif %}">Closed ({{ status_counts.closed }})</a>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Ticket ID</th>
+                <th>Subject</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>#{{ ticket.id|slice:":8" }}</td>
+                <td>{{ ticket.subject|truncatechars:60 }}</td>
+                <td><span class="priority-{{ ticket.priority }}">{{ ticket.priority|title }}</span></td>
+                <td><span class="status-badge status-{{ ticket.status }}">{{ ticket.status|title }}</span></td>
+                <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                <td>{{ ticket.updated_at|timesince }} ago</td>
+                <td>
+                    <a href="{% url 'support:ticket_detail' ticket.id %}" class="btn-sm">View</a>
+                    {% if ticket.status != 'closed' %}
+                        <a href="{% url 'support:close_ticket' ticket.id %}" class="btn-sm btn-danger" onclick="return confirm('Close this ticket?')">Close</a>
+                    {% endif %}
+                 </td>
+             </tr>
+            {% empty %}
+            <tr><td colspan="7">No tickets found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

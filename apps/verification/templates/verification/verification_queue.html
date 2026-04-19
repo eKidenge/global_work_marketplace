@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Queue{% endblock %}
+
+{% block content %}
+<div class="verification-queue">
+    <div class="page-header">
+        <h1>Verification Queue</h1>
+        <div class="queue-size">Queue Size: {{ queue_size }}</div>
+    </div>
+    
+    <div class="queue-items">
+        {% for verification in verifications %}
+        <div class="queue-item">
+            <div class="item-header">
+                <div class="task-title">{{ verification.task.title }}</div>
+                <div class="item-actions">
+                    <a href="{% url 'verification:verify_task' verification.task.id %}" class="btn btn-primary">Verify Now</a>
+                </div>
+            </div>
+            <div class="item-details">
+                <div class="detail">
+                    <span>Task ID:</span>
+                    <code>{{ verification.task.id|slice:":12" }}...</code>
+                </div>
+                <div class="detail">
+                    <span>Agent:</span>
+                    {{ verification.task.matched_agent.name|default:"Unknown" }}
+                </div>
+                <div class="detail">
+                    <span>Submitted:</span>
+                    {{ verification.task.completed_at|timesince }} ago
+                </div>
+                <div class="detail">
+                    <span>Budget:</span>
+                    {{ verification.task.budget_sats }} sats
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">No pending verifications</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

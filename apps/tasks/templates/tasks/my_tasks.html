@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Tasks | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="my-tasks-container">
+    <div class="page-header">
+        <h1>My Tasks</h1>
+        <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">Create New Task</a>
+    </div>
+    
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <a href="?status=open" class="tab {% if request.GET.status == 'open' %}active{% endif %}">
+            Open ({{ status_counts.open }})
+        </a>
+        <a href="?status=assigned" class="tab {% if request.GET.status == 'assigned' %}active{% endif %}">
+            Assigned ({{ status_counts.assigned }})
+        </a>
+        <a href="?status=executing" class="tab {% if request.GET.status == 'executing' %}active{% endif %}">
+            Executing ({{ status_counts.executing }})
+        </a>
+        <a href="?status=completed" class="tab {% if request.GET.status == 'completed' %}active{% endif %}">
+            Completed ({{ status_counts.completed }})
+        </a>
+        <a href="?status=failed" class="tab {% if request.GET.status == 'failed' %}active{% endif %}">
+            Failed ({{ status_counts.failed }})
+        </a>
+    </div>
+    
+    <!-- Tasks Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Budget</th>
+                <th>Agent</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id|slice:":8" }}</td>
+                <td>{{ task.title|truncatechars:50 }}</td>
+                <td>{{ task.budget_sats }} sats</td>
+                <td>{{ task.matched_agent.name|default:"-" }}</td>
+                <td><span class="status-badge status-{{ task.state }}">{{ task.state }}</span></td>
+                <td>{{ task.created_at|date:"M d, Y" }}</td>
+                <td>
+                    <a href="{% url 'tasks:task_detail' task.id %}" class="btn-sm">View</a>
+                    {% if task.state == 'open' %}
+                        <a href="{% url 'tasks:task_edit' task.id %}" class="btn-sm">Edit</a>
+                        <a href="{% url 'tasks:task_cancel' task.id %}" class="btn-sm btn-danger">Cancel</a>
+                    {% endif %}
+                 </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">No tasks found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

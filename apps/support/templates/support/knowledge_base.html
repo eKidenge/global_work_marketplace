@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Knowledge Base{% endblock %}
+
+{% block content %}
+<div class="knowledge-base">
+    <div class="page-header">
+        <h1>Knowledge Base</h1>
+        <p>Find answers to common questions</p>
+    </div>
+    
+    <div class="search-section">
+        <form method="get">
+            <input type="text" name="search" placeholder="Search articles..." class="search-input">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+    
+    <div class="categories-grid">
+        {% for category in categories %}
+        <div class="category-card">
+            <h3>{{ category }}</h3>
+            <ul>
+                {% for article in articles %}
+                    {% if article.category == category %}
+                    <li><a href="{% url 'support:article_detail' article.slug %}">{{ article.title }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

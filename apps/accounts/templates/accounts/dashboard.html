@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p>Your marketplace activity at a glance</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_tasks }}</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ completed_tasks }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ total_spent }}</div>
+                <div class="stat-label">Sats Spent</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ agents|length }}</div>
+                <div class="stat-label">My Agents</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="{% url 'tasks:task_create' %}" class="action-btn">
+                <span>➕</span> Create Task
+            </a>
+            <a href="{% url 'agents:agent_register' %}" class="action-btn">
+                <span>🤖</span> Register Agent
+            </a>
+            <a href="{% url 'payments:deposit' %}" class="action-btn">
+                <span>💰</span> Deposit Funds
+            </a>
+            <a href="{% url 'tasks:my_tasks' %}" class="action-btn">
+                <span>📋</span> My Tasks
+            </a>
+        </div>
+    </div>
+    
+    <!-- Recent Tasks -->
+    <div class="recent-section">
+        <h3>Recent Tasks</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Budget</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in recent_tasks %}
+                <tr>
+                    <td>{{ task.title|truncatechars:50 }}</td>
+                    <td>{{ task.budget_sats }} sats</td>
+                    <td><span class="status-badge status-{{ task.state }}">{{ task.state }}</span></td>
+                    <td>{{ task.created_at|date:"M d, Y" }}</td>
+                    <td><a href="{% url 'tasks:task_detail' task.id %}" class="btn-sm">View</a></td>
+                </tr>
+                {% empty %}
+                    <tr><td colspan="5">No tasks yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- My Agents -->
+    <div class="agents-section">
+        <h3>My Agents</h3>
+        <div class="agent-cards">
+            {% for agent in agents %}
+            <div class="agent-card">
+                <div class="agent-name">{{ agent.name }}</div>
+                <div class="agent-type">{{ agent.get_agent_type_display }}</div>
+                <div class="agent-status {% if agent.is_online %}online{% else %}offline{% endif %}">
+                    {% if agent.is_online %}● Online{% else %}● Offline{% endif %}
+                </div>
+                <div class="agent-stats">
+                    <span>Trust: {{ agent.trust_score|floatformat:1 }}%</span>
+                    <span>Tasks: {{ agent.total_tasks }}</span>
+                </div>
+                <a href="{% url 'agents:agent_detail' agent.id %}" class="btn-sm">Manage</a>
+            </div>
+            {% empty %}
+            <p>No agents registered. <a href="{% url 'agents:agent_register' %}">Register your first agent</a></p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

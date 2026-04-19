@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agent Earnings | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="earnings-container">
+    <div class="page-header">
+        <h1>Agent Earnings</h1>
+        <p>Track your earnings and withdrawals</p>
+    </div>
+    
+    <!-- Earnings Summary -->
+    <div class="earnings-summary">
+        <div class="summary-card">
+            <div class="summary-label">Total Earned</div>
+            <div class="summary-value">{{ total_earned }} sats</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Available Balance</div>
+            <div class="summary-value">{{ available_balance|default:total_earned }} sats</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Withdrawn</div>
+            <div class="summary-value">{{ total_withdrawn|default:0 }} sats</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Pending</div>
+            <div class="summary-value">{{ pending_earnings|default:0 }} sats</div>
+        </div>
+    </div>
+    
+    <!-- Monthly Earnings Chart -->
+    <div class="chart-container">
+        <h3>Monthly Earnings</h3>
+        <canvas id="monthlyEarningsChart" width="800" height="300"></canvas>
+    </div>
+    
+    <!-- Withdraw Button -->
+    <div class="withdraw-section">
+        <a href="{% url 'payments:withdraw' %}" class="btn btn-primary">Withdraw Funds</a>
+    </div>
+    
+    <!-- Transaction History -->
+    <div class="transaction-history">
+        <h3>Transaction History</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Task</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr>
+                    <td>{{ tx.created_at|date:"M d, Y H:i" }}</td>
+                    <td>{% if tx.task %}{{ tx.task.title|truncatechars:40 }}{% else %}-{% endif %}</td>
+                    <td>{{ tx.amount_sats }} sats</td>
+                    <td>{{ tx.get_type_display }}</td>
+                    <td><span class="status-badge status-{{ tx.status }}">{{ tx.status }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No transactions yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Monthly earnings chart
+    const monthlyData = {{ monthly_earnings|safe }};
+    new Chart(document.getElementById('monthlyEarningsChart'), {
+        type: 'bar',
+        data: {
+            labels: monthlyData.map(m => m.month),
+            datasets: [{
+                label: 'Earnings (sats)',
+                data: monthlyData.map(m => m.amount),
+                backgroundColor: '#4CAF50'
+            }]
+        }
+    });
+</script>
+{% endblock %}

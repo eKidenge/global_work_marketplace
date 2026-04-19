@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.id|slice:":8" }}{% endblock %}
+
+{% block content %}
+<div class="ticket-detail">
+    <div class="page-header">
+        <div>
+            <h1>Ticket #{{ ticket.id|slice:":8" }}: {{ ticket.subject }}</h1>
+            <div class="ticket-meta">
+                <span class="priority-{{ ticket.priority }}">{{ ticket.priority|title }} Priority</span>
+                <span class="status-badge status-{{ ticket.status }}">{{ ticket.status|title }}</span>
+                <span>Created: {{ ticket.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+        </div>
+        <div>
+            {% if ticket.status != 'closed' %}
+                <a href="{% url 'support:close_ticket' ticket.id %}" class="btn btn-danger" onclick="return confirm('Close this ticket?')">Close Ticket</a>
+            {% else %}
+                <a href="{% url 'support:reopen_ticket' ticket.id %}" class="btn btn-primary">Reopen Ticket</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="messages-thread">
+        {% for msg in messages %}
+        <div class="message {% if msg.is_staff_reply %}staff-reply{% else %}user-message{% endif %}">
+            <div class="message-header">
+                <strong>{{ msg.user.email }}</strong>
+                <span class="message-date">{{ msg.created_at|date:"M d, Y H:i" }}</span>
+                {% if msg.is_staff_reply %}
+                    <span class="staff-badge">Support Staff</span>
+                {% endif %}
+            </div>
+            <div class="message-body">
+                {{ msg.message|linebreaks }}
+            </div>
+            {% if msg.attachments %}
+            <div class="message-attachments">
+                <strong>Attachments:</strong>
+                {% for att in msg.attachments %}
+                    <a href="{{ att }}">{{ att|slice:"-20" }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if ticket.status != 'closed' %}
+    <div class="reply-form">
+        <h3>Reply to Ticket</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea name="message" rows="5" class="form-control" required placeholder="Type your reply here..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Reply</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

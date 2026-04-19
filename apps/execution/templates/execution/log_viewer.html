@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Execution Logs{% endblock %}
+
+{% block content %}
+<div class="log-viewer">
+    <div class="page-header">
+        <h1>Execution Logs</h1>
+        <div class="filters">
+            <select id="levelFilter" onchange="filterLogs()">
+                <option value="">All Levels</option>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
+                <option value="debug">Debug</option>
+            </select>
+            <button onclick="refreshLogs()" class="btn btn-secondary">Refresh</button>
+        </div>
+    </div>
+    
+    <div class="logs-container" id="logsContainer">
+        {% for log in logs %}
+        <div class="log-entry log-{{ log.log_level }}" data-level="{{ log.log_level }}">
+            <span class="log-time">{{ log.timestamp|date:"H:i:s.u" }}</span>
+            <span class="log-level">{{ log.log_level|upper }}</span>
+            <span class="log-message">{{ log.message }}</span>
+            {% if log.data %}
+            <pre class="log-data">{{ log.data|pprint }}</pre>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="empty-state">No logs available</div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if logs.has_other_pages %}
+    <div class="pagination">
+        {% if logs.has_previous %}
+            <a href="?page={{ logs.previous_page_number }}&level={{ selected_level }}" class="page-link">&laquo; Previous</a>
+        {% endif %}
+        {% for num in logs.paginator.page_range %}
+            {% if logs.number == num %}
+                <span class="page-current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}&level={{ selected_level }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if logs.has_next %}
+            <a href="?page={{ logs.next_page_number }}&level={{ selected_level }}" class="page-link">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function filterLogs() {
+        const level = document.getElementById('levelFilter').value;
+        window.location.href = `?level=${level}`;
+    }
+    
+    function refreshLogs() {
+        location.reload();
+    }
+    
+    // Auto-refresh every 5 seconds if execution is running
+    {% if execution.state == 'running' %}
+    setTimeout(() => location.reload(), 5000);
+    {% endif %}
+</script>
+{% endblock %}

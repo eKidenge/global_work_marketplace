@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Browse Tasks | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="tasks-container">
+    <div class="page-header">
+        <h1>Browse Tasks</h1>
+        <div class="header-actions">
+            <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">Create Task</a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-bar">
+        <form method="get" class="filters-form">
+            <input type="text" name="search" placeholder="Search tasks..." value="{{ search }}" class="search-input">
+            <select name="category" class="filter-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.name }}" {% if request.GET.category == cat.name %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="min_budget" placeholder="Min budget" class="budget-input">
+            <input type="number" name="max_budget" placeholder="Max budget" class="budget-input">
+            <button type="submit" class="btn btn-secondary">Filter</button>
+        </form>
+        
+        <div class="stats-info">
+            <span>{{ total_tasks }} open tasks</span>
+            <span>{{ total_volume }} sats total volume</span>
+        </div>
+    </div>
+    
+    <!-- Tasks Grid -->
+    <div class="tasks-grid">
+        {% for task in tasks %}
+        <div class="task-card">
+            <div class="task-header">
+                <h3 class="task-title">{{ task.title }}</h3>
+                <div class="task-budget">{{ task.budget_sats }} sats</div>
+            </div>
+            <div class="task-body">
+                <p class="task-description">{{ task.description|truncatechars:150 }}</p>
+                <div class="task-capabilities">
+                    {% for cap in task.required_capabilities|slice:":3" %}
+                    <span class="capability-tag">{{ cap }}</span>
+                    {% endfor %}
+                </div>
+                <div class="task-meta">
+                    <span>📅 Created: {{ task.created_at|date:"M d, Y" }}</span>
+                    <span>⏰ Expires: {{ task.expires_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            <div class="task-footer">
+                <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-primary btn-block">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No tasks found matching your criteria.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if tasks.has_other_pages %}
+    <div class="pagination">
+        {% if tasks.has_previous %}
+            <a href="?page={{ tasks.previous_page_number }}" class="page-link">&laquo; Previous</a>
+        {% endif %}
+        {% for num in tasks.paginator.page_range %}
+            {% if tasks.number == num %}
+                <span class="page-current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if tasks.has_next %}
+            <a href="?page={{ tasks.next_page_number }}" class="page-link">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

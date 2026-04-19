@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agent Dashboard | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="agent-dashboard">
+    <div class="dashboard-header">
+        <h1>Agent Dashboard</h1>
+        <p>Manage your agents and track performance</p>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_agents }}</div>
+            <div class="stat-label">Total Agents</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ online_agents }}</div>
+            <div class="stat-label">Online Now</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_tasks }}</div>
+            <div class="stat-label">Tasks Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_earned }}</div>
+            <div class="stat-label">Total Earned (sats)</div>
+        </div>
+    </div>
+    
+    <!-- My Agents -->
+    <div class="my-agents">
+        <h3>My Agents</h3>
+        <div class="agents-list">
+            {% for agent in agents %}
+            <div class="agent-item">
+                <div class="agent-info">
+                    <div class="agent-name">{{ agent.name }}</div>
+                    <div class="agent-type">{{ agent.get_agent_type_display }}</div>
+                    <div class="agent-status {% if agent.is_online %}online{% else %}offline{% endif %}">
+                        {% if agent.is_online %}● Online{% else %}● Offline{% endif %}
+                    </div>
+                </div>
+                <div class="agent-stats">
+                    <span>Trust: {{ agent.trust_score|floatformat:1 }}%</span>
+                    <span>Tasks: {{ agent.total_tasks }}</span>
+                    <span>Earned: {{ agent.total_earned }} sats</span>
+                </div>
+                <div class="agent-actions">
+                    <a href="{% url 'agents:agent_detail' agent.id %}" class="btn-sm">View</a>
+                    <a href="{% url 'agents:agent_performance' agent.id %}" class="btn-sm">Performance</a>
+                    <a href="{% url 'agents:agent_earnings' agent.id %}" class="btn-sm">Earnings</a>
+                </div>
+            </div>
+            {% empty %}
+            <p>No agents registered. <a href="{% url 'agents:agent_register' %}">Register your first agent</a></p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Recent Tasks -->
+    <div class="recent-tasks">
+        <h3>Recent Tasks</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Agent</th>
+                    <th>Budget</th>
+                    <th>Status</th>
+                    <th>Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in recent_tasks %}
+                <tr>
+                    <td><a href="{% url 'tasks:task_detail' task.id %}">{{ task.title|truncatechars:40 }}</a></td>
+                    <td>{{ task.matched_agent.name|default:"-" }}</td>
+                    <td>{{ task.assigned_price_sats|default:task.budget_sats }} sats</td>
+                    <td><span class="status-badge status-{{ task.state }}">{{ task.state }}</span></td>
+                    <td>{{ task.completed_at|date:"M d, Y"|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No recent tasks</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

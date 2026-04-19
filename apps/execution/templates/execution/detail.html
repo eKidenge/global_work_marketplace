@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Execution Details{% endblock %}
+
+{% block content %}
+<div class="execution-detail">
+    <div class="page-header">
+        <h1>Execution Details</h1>
+        <div class="actions">
+            {% if execution.state == 'running' %}
+                <a href="{% url 'execution:pause' execution.id %}" class="btn btn-warning">Pause</a>
+                <a href="{% url 'execution:cancel' execution.id %}" class="btn btn-danger">Cancel</a>
+            {% elif execution.state == 'pending' %}
+                <a href="{% url 'execution:resume' execution.id %}" class="btn btn-primary">Start</a>
+                <a href="{% url 'execution:cancel' execution.id %}" class="btn btn-danger">Cancel</a>
+            {% elif execution.state == 'failed' %}
+                <a href="{% url 'execution:retry' execution.id %}" class="btn btn-primary">Retry</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="execution-info">
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Basic Info</h3>
+                <ul>
+                    <li><strong>Execution ID:</strong> {{ execution.id }}</li>
+                    <li><strong>Task:</strong> <a href="{% url 'tasks:task_detail' task.id %}">{{ task.title }}</a></li>
+                    <li><strong>Agent:</strong> <a href="{% url 'agents:agent_detail' agent.id %}">{{ agent.name }}</a></li>
+                    <li><strong>Type:</strong> {{ execution.execution_type|upper }}</li>
+                    <li><strong>State:</strong> <span class="status-badge status-{{ execution.state }}">{{ execution.state }}</span></li>
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h3>Timing</h3>
+                <ul>
+                    <li><strong>Started:</strong> {{ execution.started_at|date:"M d, Y H:i:s"|default:"-" }}</li>
+                    <li><strong>Completed:</strong> {{ execution.completed_at|date:"M d, Y H:i:s"|default:"-" }}</li>
+                    <li><strong>Duration:</strong> {{ execution.duration_ms|default:"-" }} ms</li>
+                    <li><strong>Retry Count:</strong> {{ execution.retry_count }}</li>
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h3>Economics</h3>
+                <ul>
+                    <li><strong>Cost:</strong> {{ execution.cost_sats }} sats</li>
+                    <li><strong>Payment Status:</strong> {{ execution.payment_status }}</li>
+                    <li><strong>Budget:</strong> {{ task.budget_sats }} sats</li>
+                </ul>
+            </div>
+            
+            {% if execution.error_message %}
+            <div class="info-card error">
+                <h3>Error</h3>
+                <p>{{ execution.error_message }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Input/Output Data -->
+        <div class="data-section">
+            <h3>Input Data</h3>
+            <pre class="data-json">{{ execution.input_data|pprint }}</pre>
+        </div>
+        
+        {% if execution.output_data %}
+        <div class="data-section">
+            <h3>Output Data</h3>
+            <pre class="data-json">{{ execution.output_data|pprint }}</pre>
+        </div>
+        {% endif %}
+        
+        <!-- Checkpoints -->
+        {% if checkpoints %}
+        <div class="checkpoints-section">
+            <h3>Checkpoints</h3>
+            <div class="checkpoints-list">
+                {% for checkpoint in checkpoints %}
+                <div class="checkpoint-item">
+                    <span>{{ checkpoint.created_at|date:"M d, Y H:i:s" }}</span>
+                    <a href="#" class="btn-sm">Restore</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

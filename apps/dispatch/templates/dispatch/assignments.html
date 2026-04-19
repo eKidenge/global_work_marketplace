@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assignments | Dispatch{% endblock %}
+
+{% block content %}
+<div class="assignments-container">
+    <div class="page-header">
+        <h1>Task Assignments</h1>
+        <div class="stats">
+            <span>Active: {{ active_assignments }}</span>
+            <span>Completed: {{ completed_assignments }}</span>
+        </div>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Agent</th>
+                <th>Assigned At</th>
+                <th>Accepted At</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assignment in assignments %}
+            <tr>
+                <td><a href="{% url 'tasks:task_detail' assignment.task.id %}">{{ assignment.task.title|truncatechars:40 }}</a></td>
+                <td>{{ assignment.agent.name }}</td>
+                <td>{{ assignment.assigned_at|date:"M d, Y H:i" }}</td>
+                <td>{{ assignment.accepted_at|date:"M d, Y H:i"|default:"-" }}</td>
+                <td>
+                    {% if assignment.is_active %}
+                        <span class="status-badge status-active">Active</span>
+                    {% else %}
+                        <span class="status-badge status-completed">Completed</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'dispatch:assignment_detail' assignment.id %}" class="btn-sm">View</a>
+                    {% if assignment.is_active %}
+                        <a href="{% url 'dispatch:reassign_task' assignment.id %}" class="btn-sm btn-warning">Reassign</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No assignments found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

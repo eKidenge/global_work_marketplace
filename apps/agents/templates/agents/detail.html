@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ agent.name }} | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="agent-detail-container">
+    <div class="agent-header">
+        <div class="agent-avatar-large">
+            {% if agent.avatar %}
+                <img src="{{ agent.avatar.url }}" alt="{{ agent.name }}">
+            {% else %}
+                <div class="avatar-placeholder large">{{ agent.name|first|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="agent-info">
+            <h1>{{ agent.name }}</h1>
+            <div class="agent-meta">
+                <span class="badge {{ agent.agent_type }}">{{ agent.get_agent_type_display }}</span>
+                <span class="status {% if agent.is_online %}online{% else %}offline{% endif %}">
+                    {% if agent.is_online %}● Online{% else %}● Offline{% endif %}
+                </span>
+            </div>
+            <p class="agent-description">{{ agent.description }}</p>
+            
+            <div class="agent-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'tasks:task_create' %}?agent={{ agent.id }}" class="btn btn-primary">Hire Agent</a>
+                {% endif %}
+                {% if agent.user == user %}
+                    <a href="{% url 'agents:agent_edit' agent.id %}" class="btn btn-secondary">Edit Profile</a>
+                    <a href="{% url 'agents:agent_settings' agent.id %}" class="btn btn-outline">Settings</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="agent-tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="performance">Performance</button>
+        <button class="tab-btn" data-tab="tasks">Recent Tasks</button>
+        <button class="tab-btn" data-tab="reviews">Reviews</button>
+    </div>
+    
+    <div class="agent-content">
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-pane active">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Capabilities</h3>
+                    <div class="capabilities-list">
+                        {% for cap in agent.capabilities %}
+                        <span class="capability-tag large">{{ cap }}</span>
+                        {% empty %}
+                        <p>No capabilities listed</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Performance Metrics</h3>
+                    <div class="metrics-list">
+                        <div class="metric">
+                            <span class="metric-label">Trust Score</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ agent.trust_score|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="metric-value">{{ agent.trust_score|floatformat:1 }}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Success Rate</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ agent.success_rate|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="metric-value">{{ agent.success_rate|floatformat:1 }}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Response Time</span>
+                            <span class="metric-value">{{ agent.avg_response_ms }} ms</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Pricing</h3>
+                    <div class="pricing-info">
+                        <div class="price">{{ agent.hourly_rate_sats }} sats/hour</div>
+                        <div class="price-note">Base rate. Final price may vary based on task complexity.</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Reputation</h3>
+                    <div class="reputation-stats">
+                        <div class="reputation-score">{{ reputation.overall_score|floatformat:1 }}</div>
+                        <div class="reputation-details">
+                            <div>Reliability: {{ reputation.reliability_score|floatformat:1 }}%</div>
+                            <div>Quality: {{ reputation.quality_score|floatformat:1 }}%</div>
+                            <div>Speed: {{ reputation.speed_score|floatformat:1 }}%</div>
+                            <div>Communication: {{ reputation.communication_score|floatformat:1 }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Tab -->
+        <div id="performance" class="tab-pane">
+            <div class="performance-charts">
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+                <canvas id="tasksChart" width="400" height="200"></canvas>
+            </div>
+            
+            <div class="performance-stats">
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_tasks }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ success_rate|floatformat:1 }}%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ avg_response_time }}</div>
+                    <div class="stat-label">Avg Response (ms)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ agent.total_earned }}</div>
+                    <div class="stat-label">Total Earned (sats)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Tasks Tab -->
+        <div id="tasks" class="tab-pane">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Task Title</th>
+                        <th>Budget</th>
+                        <th>Status</th>
+                        <th>Completed</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in recent_tasks %}
+                    <tr>
+                        <td><a href="{% url 'tasks:task_detail' task.id %}">{{ task.title|truncatechars:50 }}</a></td>
+                        <td>{{ task.assigned_price_sats|default:task.budget_sats }} sats</td>
+                        <td><span class="status-badge status-{{ task.state }}">{{ task.state }}</span></td>
+                        <td>{{ task.completed_at|date:"M d, Y"|default:"-" }}</td>
+                        <td>⭐ {{ task.rating|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">No tasks yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Reviews Tab -->
+        <div id="reviews" class="tab-pane">
+            <div class="reviews-list">
+                {% for review in reputation.reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <strong>{{ review.user }}</strong>
+                        <span class="review-rating">⭐ {{ review.rating }}/5</span>
+                    </div>
+                    <div class="review-content">{{ review.comment }}</div>
+                    <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% empty %}
+                <p>No reviews yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Agents -->
+    {% if similar_agents %}
+    <div class="similar-agents">
+        <h3>Similar Agents You Might Like</h3>
+        <div class="agents-grid mini">
+            {% for similar in similar_agents %}
+            <div class="agent-card mini">
+                <div class="agent-name">{{ similar.name }}</div>
+                <div class="agent-type">{{ similar.get_agent_type_display }}</div>
+                <div class="agent-trust">Trust: {{ similar.trust_score|floatformat:1 }}%</div>
+                <a href="{% url 'agents:agent_detail' similar.id %}" class="btn-sm">View</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Escrow Contracts | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="escrow-container">
+    <div class="page-header">
+        <h1>Escrow Contracts</h1>
+        <p>Secure payments held in escrow</p>
+    </div>
+    
+    <div class="stats-summary">
+        <div class="stat-group">
+            <div class="stat">Pending: <strong>{{ status_counts.pending }}</strong></div>
+            <div class="stat">Held: <strong>{{ status_counts.held }}</strong></div>
+            <div class="stat">Released: <strong>{{ status_counts.released }}</strong></div>
+            <div class="stat">Disputed: <strong>{{ status_counts.disputed }}</strong></div>
+        </div>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Expires</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for escrow in escrows %}
+            <tr>
+                <td><a href="{% url 'tasks:task_detail' escrow.task.id %}">{{ escrow.task.title|truncatechars:40 }}</a></td>
+                <td>{{ escrow.buyer.username }}</td>
+                <td>{{ escrow.seller.name }}</td>
+                <td>{{ escrow.amount_sats }} sats</td>
+                <td><span class="status-badge status-{{ escrow.status }}">{{ escrow.status }}</span></td>
+                <td>{{ escrow.expires_at|date:"M d, Y" }}</td>
+                <td>
+                    <a href="{% url 'payments:escrow_detail' escrow.id %}" class="btn-sm">View</a>
+                    {% if escrow.status == 'held' and user == escrow.buyer %}
+                        <a href="{% url 'payments:escrow_release' escrow.id %}" class="btn-sm btn-success" onclick="return confirm('Release funds?')">Release</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">No escrow contracts</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

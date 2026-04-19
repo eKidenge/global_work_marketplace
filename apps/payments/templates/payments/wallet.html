@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wallet | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="wallet-container">
+    <div class="page-header">
+        <h1>My Wallet</h1>
+        <div class="actions">
+            <a href="{% url 'payments:deposit' %}" class="btn btn-primary">Deposit</a>
+            <a href="{% url 'payments:withdraw' %}" class="btn btn-secondary">Withdraw</a>
+        </div>
+    </div>
+    
+    <!-- Balance Card -->
+    <div class="balance-card">
+        <div class="balance-label">Total Balance</div>
+        <div class="balance-value">{{ balance_sats|floatformat:0 }} <span class="currency">sats</span></div>
+        <div class="balance-details">
+            <div class="detail">
+                <span>Available:</span>
+                <strong>{{ available_sats|floatformat:0 }} sats</strong>
+            </div>
+            <div class="detail">
+                <span>Reserved:</span>
+                <strong>{{ reserved_sats|floatformat:0 }} sats</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wallet Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_deposited|floatformat:0 }}</div>
+            <div class="stat-label">Total Deposited</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_withdrawn|floatformat:0 }}</div>
+            <div class="stat-label">Total Withdrawn</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_spent|floatformat:0 }}</div>
+            <div class="stat-label">Total Spent</div>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="recent-transactions">
+        <h3>Recent Transactions</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in recent_transactions %}
+                <tr>
+                    <td>{{ tx.created_at|date:"M d, Y H:i" }}</td>
+                    <td><span class="transaction-type {{ tx.type }}">{{ tx.type|title }}</span></td>
+                    <td class="{% if tx.type == 'deposit' %}positive{% elif tx.type == 'withdrawal' %}negative{% endif %}">
+                        {% if tx.type == 'deposit' %}+{% elif tx.type == 'withdrawal' %}-{% endif %}{{ tx.amount_sats }} sats
+                    </td>
+                    <td><span class="status-badge status-{{ tx.status }}">{{ tx.status }}</span></td>
+                    <td>{{ tx.description|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No transactions yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="view-all">
+            <a href="{% url 'payments:transactions' %}" class="btn-link">View All Transactions →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

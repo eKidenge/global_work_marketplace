@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FAQ | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="faq-container">
+    <div class="page-header">
+        <h1>Frequently Asked Questions</h1>
+        <p>Find quick answers to common questions</p>
+    </div>
+    
+    {% for category in categories %}
+    <div class="faq-category">
+        <h2>{{ category }}</h2>
+        {% for faq in faqs %}
+            {% if faq.category == category %}
+            <div class="faq-item">
+                <div class="faq-question">{{ faq.question }}</div>
+                <div class="faq-answer">{{ faq.answer }}</div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+    
+    <div class="contact-footer">
+        <p>Still have questions? <a href="{% url 'support:create_ticket' %}">Contact Support</a></p>
+    </div>
+</div>
+{% endblock %}

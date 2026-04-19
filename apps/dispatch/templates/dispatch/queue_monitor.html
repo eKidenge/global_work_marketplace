@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Queue Monitor | Dispatch{% endblock %}
+
+{% block content %}
+<div class="queue-monitor">
+    <div class="page-header">
+        <h1>Queue Monitor</h1>
+        <div class="stats-badge">
+            <span>Total Waiting: {{ total_waiting }}</span>
+            <span>Avg Wait: {{ avg_wait_time|floatformat:0 }} ms</span>
+        </div>
+    </div>
+    
+    <!-- Urgent Queue -->
+    <div class="queue-section">
+        <h3 class="queue-header urgent">🔴 Urgent Queue <span class="count">{{ queues.urgent|length }}</span></h3>
+        <div class="queue-items">
+            {% for item in queues.urgent %}
+            <div class="queue-item urgent">
+                <div class="queue-position">#{{ item.queue_position }}</div>
+                <div class="queue-task">{{ item.task.title|truncatechars:60 }}</div>
+                <div class="queue-meta">
+                    <span>{{ item.task.budget_sats }} sats</span>
+                    <span>Wait: {{ item.estimated_wait_ms }} ms</span>
+                </div>
+                <a href="{% url 'tasks:task_detail' item.task.id %}" class="btn-sm">View</a>
+            </div>
+            {% empty %}
+            <div class="empty-queue">No tasks in urgent queue</div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- High Priority Queue -->
+    <div class="queue-section">
+        <h3 class="queue-header high">🟠 High Priority Queue <span class="count">{{ queues.high|length }}</span></h3>
+        <div class="queue-items">
+            {% for item in queues.high %}
+            <div class="queue-item high">
+                <div class="queue-position">#{{ item.queue_position }}</div>
+                <div class="queue-task">{{ item.task.title|truncatechars:60 }}</div>
+                <div class="queue-meta">
+                    <span>{{ item.task.budget_sats }} sats</span>
+                    <span>Wait: {{ item.estimated_wait_ms }} ms</span>
+                </div>
+                <a href="{% url 'tasks:task_detail' item.task.id %}" class="btn-sm">View</a>
+            </div>
+            {% empty %}
+            <div class="empty-queue">No tasks in high priority queue</div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Normal Queue -->
+    <div class="queue-section">
+        <h3 class="queue-header normal">🟡 Normal Queue <span class="count">{{ queues.normal|length }}</span></h3>
+        <div class="queue-items">
+            {% for item in queues.normal %}
+            <div class="queue-item normal">
+                <div class="queue-position">#{{ item.queue_position }}</div>
+                <div class="queue-task">{{ item.task.title|truncatechars:60 }}</div>
+                <div class="queue-meta">
+                    <span>{{ item.task.budget_sats }} sats</span>
+                    <span>Wait: {{ item.estimated_wait_ms }} ms</span>
+                </div>
+                <a href="{% url 'tasks:task_detail' item.task.id %}" class="btn-sm">View</a>
+            </div>
+            {% empty %}
+            <div class="empty-queue">No tasks in normal queue</div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Low Queue -->
+    <div class="queue-section">
+        <h3 class="queue-header low">🟢 Low Priority Queue <span class="count">{{ queues.low|length }}</span></h3>
+        <div class="queue-items">
+            {% for item in queues.low %}
+            <div class="queue-item low">
+                <div class="queue-position">#{{ item.queue_position }}</div>
+                <div class="queue-task">{{ item.task.title|truncatechars:60 }}</div>
+                <div class="queue-meta">
+                    <span>{{ item.task.budget_sats }} sats</span>
+                    <span>Wait: {{ item.estimated_wait_ms }} ms</span>
+                </div>
+                <a href="{% url 'tasks:task_detail' item.task.id %}" class="btn-sm">View</a>
+            </div>
+            {% empty %}
+            <div class="empty-queue">No tasks in low queue</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

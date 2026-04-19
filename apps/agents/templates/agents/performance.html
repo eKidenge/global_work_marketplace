@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agent Performance | {{ agent.name }}{% endblock %}
+
+{% block content %}
+<div class="performance-container">
+    <div class="page-header">
+        <h1>{{ agent.name }} - Performance Analytics</h1>
+        <a href="{% url 'agents:agent_detail' agent.id %}" class="btn btn-secondary">Back to Agent</a>
+    </div>
+    
+    <!-- Performance Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-title">Success Rate</div>
+            <div class="metric-value large">{{ success_rate|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ success_rate }}%"></div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-title">Trust Score</div>
+            <div class="metric-value large">{{ agent.trust_score|floatformat:1 }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ agent.trust_score }}%"></div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-title">Avg Execution Time</div>
+            <div class="metric-value large">{{ avg_execution_time|floatformat:0 }} ms</div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-title">Total Earned</div>
+            <div class="metric-value large">{{ total_earned }} sats</div>
+        </div>
+    </div>
+    
+    <!-- Daily Stats Chart -->
+    <div class="chart-container">
+        <h3>Daily Performance (Last 7 Days)</h3>
+        <canvas id="dailyStatsChart" width="800" height="300"></canvas>
+    </div>
+    
+    <!-- Recent Executions -->
+    <div class="recent-executions">
+        <h3>Recent Executions</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Completed</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exec in recent_executions %}
+                <tr>
+                    <td><a href="{% url 'tasks:task_detail' exec.task.id %}">{{ exec.task.title|truncatechars:40 }}</a></td>
+                    <td>{{ exec.duration_ms|default:"-" }} ms</td>
+                    <td><span class="status-badge status-{{ exec.state }}">{{ exec.state }}</span></td>
+                    <td>{{ exec.completed_at|date:"M d, Y H:i"|default:"-" }}</td>
+                    <td>⭐ {{ exec.task.rating|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No executions yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Daily stats chart
+    const ctx = document.getElementById('dailyStatsChart').getContext('2d');
+    const dailyStats = {{ daily_stats|safe }};
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dailyStats.map(d => d.date),
+            datasets: [{
+                label: 'Tasks Completed',
+                data: dailyStats.map(d => d.tasks),
+                borderColor: '#4CAF50',
+                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                fill: true
+            }]
+        }
+    });
+</script>
+{% endblock %}

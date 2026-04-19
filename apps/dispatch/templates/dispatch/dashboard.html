@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dispatch Dashboard | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="dispatch-container">
+    <div class="page-header">
+        <h1>Dispatch Dashboard</h1>
+        <p>Real-time task routing and assignment</p>
+    </div>
+    
+    <!-- Queue Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ queue_stats.urgent }}</div>
+            <div class="stat-label">Urgent Queue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ queue_stats.high }}</div>
+            <div class="stat-label">High Priority</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ queue_stats.normal }}</div>
+            <div class="stat-label">Normal Queue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ queue_stats.low }}</div>
+            <div class="stat-label">Low Priority</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ active_assignments }}</div>
+            <div class="stat-label">Active Assignments</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ avg_dispatch_latency|floatformat:0 }}</div>
+            <div class="stat-label">Avg Dispatch (ms)</div>
+        </div>
+    </div>
+    
+    <!-- Recent Dispatches -->
+    <div class="recent-dispatches">
+        <h3>Recent Dispatch Records</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Selected Agent</th>
+                    <th>Score</th>
+                    <th>Latency</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in recent_dispatches %}
+                <tr>
+                    <td>{{ record.task.title|truncatechars:40 }}</td>
+                    <td>{{ record.selected_agent.name }}</td>
+                    <td>{{ record.score|floatformat:2 }}</td>
+                    <td>{{ record.dispatch_latency_ms }} ms</td>
+                    <td>{{ record.created_at|timesince }} ago</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No dispatch records yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

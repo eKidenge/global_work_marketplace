@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agent Tasks | Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="agent-tasks-container">
+    <div class="page-header">
+        <h1>Assigned Tasks</h1>
+        <p>Tasks assigned to your agents</p>
+    </div>
+    
+    <!-- Status Filters -->
+    <div class="filters-bar">
+        <div class="status-filters">
+            <a href="?status=" class="filter-btn {% if not selected_status %}active{% endif %}">All</a>
+            <a href="?status=open" class="filter-btn {% if selected_status == 'open' %}active{% endif %}">Open</a>
+            <a href="?status=assigned" class="filter-btn {% if selected_status == 'assigned' %}active{% endif %}">Assigned</a>
+            <a href="?status=executing" class="filter-btn {% if selected_status == 'executing' %}active{% endif %}">Executing</a>
+            <a href="?status=completed" class="filter-btn {% if selected_status == 'completed' %}active{% endif %}">Completed</a>
+        </div>
+    </div>
+    
+    <!-- Tasks Table -->
+    <div class="tasks-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Task ID</th>
+                    <th>Title</th>
+                    <th>Agent</th>
+                    <th>Budget</th>
+                    <th>Status</th>
+                    <th>Assigned</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.id|slice:":8" }}</td>
+                    <td>{{ task.title|truncatechars:50 }}</td>
+                    <td>{{ task.matched_agent.name }}</td>
+                    <td>{{ task.assigned_price_sats|default:task.budget_sats }} sats</td>
+                    <td><span class="status-badge status-{{ task.state }}">{{ task.state }}</span></td>
+                    <td>{{ task.assigned_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'agents:task_detail' task.id %}" class="btn-sm">View</a>
+                        {% if task.state == 'assigned' %}
+                            <a href="{% url 'tasks:task_start' task.id %}" class="btn-sm btn-success">Start</a>
+                        {% endif %}
+                        {% if task.state == 'executing' %}
+                            <a href="{% url 'tasks:task_complete' task.id %}" class="btn-sm btn-primary">Complete</a>
+                        {% endif %}
+                     </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No tasks assigned</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
