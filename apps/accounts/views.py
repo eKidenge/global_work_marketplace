@@ -8,18 +8,23 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 from django.utils.crypto import get_random_string
 from .models import User, Profile, APIKey
 from .forms import (
     LoginForm, RegisterForm, ProfileEditForm, 
     ChangePasswordForm, PasswordResetForm, APIKeyForm,
-    UserRegisterForm, AdminRegisterForm  # ADD THESE TWO
+    UserRegisterForm, AdminRegisterForm
 )
-# Add these to your existing imports
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-# apps/accounts/views.py - Add/modify this method
+
+# Import for API key encryption
+from cryptography.fernet import Fernet
+import base64
+import os
+
 
 class LoginView(View):
     template_name = 'accounts/login.html'
@@ -27,7 +32,6 @@ class LoginView(View):
     def get(self, request):
         """Handle GET request - show login form"""
         if request.user.is_authenticated:
-            # If already logged in, redirect based on role
             if request.user.is_staff:
                 return redirect('super_admin:dashboard')
             return redirect('accounts:dashboard')
@@ -42,7 +46,6 @@ class LoginView(View):
         user = authenticate(request, username=email, password=password)
         
         if user:
-            # Check role-based access
             if role == 'admin' and not user.is_staff:
                 messages.error(request, 'You do not have admin access')
                 return redirect('accounts:login')
@@ -57,9 +60,8 @@ class LoginView(View):
             login(request, user)
             
             if not remember:
-                request.session.set_expiry(0)  # Session expires on browser close
+                request.session.set_expiry(0)
             
-            # Redirect based on role
             if user.is_staff:
                 return redirect('super_admin:dashboard')
             elif role == 'agent':
@@ -70,7 +72,6 @@ class LoginView(View):
         messages.error(request, 'Invalid email or password')
         return redirect('accounts:login')
 
-# apps/accounts/views.py - Add this method to your RegisterView
 
 class RegisterView(View):
     template_name = 'accounts/register.html'
@@ -80,79 +81,124 @@ class RegisterView(View):
             return redirect('accounts:dashboard')
         return render(request, self.template_name)
     
+    def _get_encryption_key(self):
+        """Get or create a consistent encryption key for API keys"""
+        # Use Django's SECRET_KEY as base for encryption
+        from django.conf import settings
+        key = settings.SECRET_KEY[:32].encode()
+        # Ensure key is 32 bytes for Fernet
+        key = key.ljust(32, b'_')
+        # Fernet requires base64 encoded 32-byte key
+        return base64.urlsafe_b64encode(key)
+    
+    def _encrypt_api_key(self, api_key):
+        """Encrypt API key for secure storage"""
+        if not api_key:
+            return None
+        
+        try:
+            encryption_key = self._get_encryption_key()
+            cipher = Fernet(encryption_key)
+            encrypted = cipher.encrypt(api_key.encode())
+            return encrypted
+        except Exception as e:
+            # Log error but don't fail registration
+            print(f"API key encryption failed: {e}")
+            return None
+    
     def post(self, request):
         role = request.POST.get('role', 'user')
         
-        if role == 'user':
-            return self.register_user(request)
-        elif role == 'agent':
-            return self.register_agent(request)
-        elif role == 'admin':
-            return self.register_admin(request)
-        else:
-            messages.error(request, 'Invalid registration type')
-            return redirect('accounts:register')
-    
-    def register_user(self, request):
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Account created successfully!')
-            return redirect('accounts:dashboard')
-        return render(request, self.template_name, {'form': form, 'errors': form.errors})
-    
-    def register_agent(self, request):
-        from apps.agents.models import Agent
+        # Get form data
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        first_name = request.POST.get('first_name', '')
+        last_name = request.POST.get('last_name', '')
+        agree_terms = request.POST.get('agree_terms')
         
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
+        # Validation
+        errors = []
+        
+        if not agree_terms:
+            errors.append('You must agree to the Terms of Service')
+        
+        if not password1 or not password2:
+            errors.append('Password is required')
+        elif password1 != password2:
+            errors.append('Passwords do not match')
+        elif len(password1) < 8:
+            errors.append('Password must be at least 8 characters')
+        
+        if not email:
+            errors.append('Email is required')
+        elif User.objects.filter(email=email).exists():
+            errors.append('Email already registered')
+        
+        if not username:
+            errors.append('Username is required')
+        elif User.objects.filter(username=username).exists():
+            errors.append('Username already taken')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, self.template_name)
+        
+        # Create user
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password1,
+                first_name=first_name,
+                last_name=last_name
+            )
+        except Exception as e:
+            messages.error(request, f'Error creating account: {str(e)}')
+            return render(request, self.template_name)
+        
+        # Create profile
+        Profile.objects.get_or_create(user=user)
+        
+        # Handle agent registration
+        if role == 'agent':
+            from apps.agents.models import Agent
             
-            # Create agent profile
-            agent = Agent.objects.create(
+            agent_name = request.POST.get('agent_name', username)
+            agent_type = request.POST.get('agent_type', 'human')
+            hourly_rate = request.POST.get('hourly_rate', 10000)
+            agent_description = request.POST.get('agent_description', '')
+            capabilities = request.POST.getlist('capabilities')
+            api_endpoint = request.POST.get('api_endpoint', '')
+            api_key = request.POST.get('api_key', '')
+            
+            # Encrypt the API key if provided
+            encrypted_api_key = self._encrypt_api_key(api_key) if api_key else None
+            
+            Agent.objects.create(
                 user=user,
-                name=request.POST.get('agent_name', user.username),
-                agent_type=request.POST.get('agent_type', 'ai'),
-                capabilities=request.POST.getlist('capabilities'),
-                hourly_rate_sats=int(request.POST.get('hourly_rate', 10000)),
-                description=request.POST.get('agent_description', ''),
-                api_endpoint=request.POST.get('api_endpoint', ''),
+                name=agent_name,
+                agent_type=agent_type,
+                hourly_rate_sats=int(hourly_rate),
+                description=agent_description,
+                capabilities=capabilities,
+                api_endpoint=api_endpoint,
+                api_key_encrypted=encrypted_api_key,
                 is_active=True
             )
-            
-            login(request, user)
-            messages.success(request, f'Agent "{agent.name}" registered successfully!')
+        
+        # Login user
+        login(request, user)
+        
+        messages.success(request, f'Welcome {first_name or username}! Your account has been created.')
+        
+        if role == 'agent':
             return redirect('agents:agent_dashboard')
-        
-        return render(request, self.template_name, {'form': form, 'errors': form.errors})
-    
-    def register_admin(self, request):
-        admin_code = request.POST.get('admin_code')
-        
-        # Verify admin code (you should store this securely)
-        if admin_code != 'SUPER_SECRET_ADMIN_CODE_2024':
-            messages.error(request, 'Invalid admin registration code')
-            return redirect('accounts:register')
-        
-        form = AdminRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_staff = True
-            user.save()
-            
-            # Create admin profile
-            from apps.super_admin.models import AdminUser
-            AdminUser.objects.create(
-                user=user,
-                role=request.POST.get('admin_role', 'admin')
-            )
-            
-            login(request, user)
-            messages.success(request, 'Admin account created!')
-            return redirect('super_admin:dashboard')
-        
-        return render(request, self.template_name, {'form': form, 'errors': form.errors})
+        else:
+            return redirect('accounts:dashboard')
+
 
 class ProfileView(LoginRequiredMixin, View):
     template_name = 'accounts/profile.html'
@@ -176,6 +222,7 @@ class ProfileView(LoginRequiredMixin, View):
         
         return {'tasks': tasks, 'transactions': transactions}
 
+
 class ProfileEditView(LoginRequiredMixin, View):
     template_name = 'accounts/edit_profile.html'
     
@@ -190,6 +237,7 @@ class ProfileEditView(LoginRequiredMixin, View):
             messages.success(request, 'Profile updated successfully!')
             return redirect('accounts:profile')
         return render(request, self.template_name, {'form': form})
+
 
 class ChangePasswordView(LoginRequiredMixin, View):
     template_name = 'accounts/change_password.html'
@@ -208,6 +256,7 @@ class ChangePasswordView(LoginRequiredMixin, View):
             messages.error(request, 'Current password is incorrect')
         return render(request, self.template_name, {'form': form})
 
+
 class ForgotPasswordView(View):
     template_name = 'accounts/forgot_password.html'
     
@@ -221,7 +270,6 @@ class ForgotPasswordView(View):
             user = User.objects.filter(email=email).first()
             if user:
                 token = get_random_string(64)
-                # Store token in cache or database
                 reset_link = request.build_absolute_uri(
                     reverse_lazy('accounts:reset_password', kwargs={'token': token})
                 )
@@ -236,6 +284,7 @@ class ForgotPasswordView(View):
             messages.error(request, 'No user found with this email')
         return render(request, self.template_name, {'form': form})
 
+
 class UserDashboardView(LoginRequiredMixin, View):
     template_name = 'accounts/dashboard.html'
     
@@ -243,19 +292,157 @@ class UserDashboardView(LoginRequiredMixin, View):
         from apps.tasks.models import Task
         from apps.agents.models import Agent
         from apps.payments.models import Transaction
+        from apps.execution.models import Execution
+        from apps.dispatch.models import DispatchQueue, Assignment
+        from apps.verification.models import Verification
+        
+        user = request.user
+        
+        # Get user's agent profile
+        user_agent = Agent.objects.filter(user=user).first()
+        
+        # Initialize task queries
+        tasks_as_creator = Task.objects.none()
+        tasks_as_agent = Task.objects.none()
+        tasks_as_reviewer = Task.objects.none()
+        
+        # Tasks where user is the matched agent
+        if user_agent:
+            tasks_as_agent = Task.objects.filter(matched_agent=user_agent)
+        
+        # Tasks from dispatch queue assigned to user's agent
+        if user_agent:
+            dispatch_assignments = DispatchQueue.objects.filter(assigned_agent=user_agent)
+            tasks_from_dispatch = Task.objects.filter(dispatch_queue__in=dispatch_assignments)
+            tasks_as_agent = tasks_as_agent | tasks_from_dispatch
+        
+        # Tasks from assignments
+        if user_agent:
+            assignments = Assignment.objects.filter(agent=user_agent)
+            tasks_from_assignments = Task.objects.filter(assignment__in=assignments)
+            tasks_as_agent = tasks_as_agent | tasks_from_assignments
+        
+        # Tasks where user is the executor via execution
+        if user_agent:
+            executions = Execution.objects.filter(agent=user_agent)
+            tasks_from_executions = Task.objects.filter(execution__in=executions)
+            tasks_as_agent = tasks_as_agent | tasks_from_executions
+        
+        # Tasks where user is the verifier
+        verifications = Verification.objects.filter(verified_by=user_agent)
+        tasks_as_reviewer = Task.objects.filter(verification__in=verifications)
+        
+        # Combine all unique tasks
+        all_user_tasks = (tasks_as_agent | tasks_as_reviewer).distinct()
+        
+        # Get recent transactions
+        recent_transactions = Transaction.objects.filter(
+            Q(from_wallet__owner_id=user.id) |
+            Q(to_wallet__owner_id=user.id)
+        ).order_by('-created_at')[:10]
+        
+        # Get user's agents
+        user_agents = Agent.objects.filter(user=user)
+        
+        # Calculate statistics
+        total_tasks = all_user_tasks.count()
+        completed_tasks = all_user_tasks.filter(state='completed').count()
+        pending_tasks = all_user_tasks.filter(state='pending').count()
+        in_progress_tasks = all_user_tasks.filter(state='running').count()
+        failed_tasks = all_user_tasks.filter(state='failed').count()
+        cancelled_tasks = all_user_tasks.filter(state='cancelled').count()
+        
+        # Calculate success rate
+        success_rate = 0
+        if completed_tasks + failed_tasks > 0:
+            success_rate = (completed_tasks / (completed_tasks + failed_tasks)) * 100
+        
+        # Calculate earnings and spending
+        total_earned = user.total_earned
+        total_spent = user.total_spent
+        wallet_balance = user.wallet_balance
+        
+        # Get recent tasks with details
+        recent_tasks = all_user_tasks.select_related(
+            'matched_agent',
+            'execution',
+            'verification'
+        ).order_by('-created_at')[:10]
+        
+        # Get pending verifications
+        pending_verifications = Verification.objects.filter(
+            task__in=all_user_tasks,
+            status='pending'
+        ).count()
+        
+        # Get active disputes
+        from apps.verification.models import Dispute
+        active_disputes = Dispute.objects.filter(
+            Q(task__in=all_user_tasks) | Q(raised_by=user),
+            status__in=['open', 'investigating']
+        ).count()
+        
+        # Get agent performance metrics if user is an agent
+        agent_performance = {}
+        if user_agent:
+            agent_performance = {
+                'total_tasks': user_agent.total_tasks_completed,
+                'success_rate': user_agent.success_rate,
+                'average_rating': user_agent.average_rating,
+                'total_earned': user_agent.total_earned,
+                'hourly_rate': user_agent.hourly_rate_sats,
+                'trust_score': user_agent.trust_score,
+                'response_time_avg': user_agent.average_response_time,
+                'completion_time_avg': user_agent.average_completion_time,
+            }
+        
+        # Get platform statistics
+        platform_stats = {
+            'total_agents': Agent.objects.filter(is_active=True).count(),
+            'total_tasks_platform': Task.objects.count(),
+            'completed_tasks_platform': Task.objects.filter(state='completed').count(),
+            'active_tasks': Task.objects.filter(state__in=['open', 'assigned', 'running']).count(),
+        }
         
         context = {
-            'user': request.user,
-            'total_tasks': Task.objects.filter(created_by=request.user).count(),
-            'completed_tasks': Task.objects.filter(created_by=request.user, state='completed').count(),
-            'total_spent': request.user.total_spent,
-            'recent_tasks': Task.objects.filter(created_by=request.user).order_by('-created_at')[:5],
-            'agents': Agent.objects.filter(user=request.user),
-            'recent_transactions': Transaction.objects.filter(
-                from_wallet__owner_id=request.user.id
-            ).order_by('-created_at')[:5],
+            # User info
+            'user': user,
+            'profile': user.profile,
+            'user_agent': user_agent,
+            'has_agent': user_agent is not None,
+            'user_agents': user_agents,
+            
+            # Task statistics
+            'total_tasks': total_tasks,
+            'completed_tasks': completed_tasks,
+            'pending_tasks': pending_tasks,
+            'in_progress_tasks': in_progress_tasks,
+            'failed_tasks': failed_tasks,
+            'cancelled_tasks': cancelled_tasks,
+            'success_rate': success_rate,
+            
+            # Financial metrics
+            'total_earned': total_earned,
+            'total_spent': total_spent,
+            'wallet_balance': wallet_balance,
+            
+            # Recent data
+            'recent_tasks': recent_tasks,
+            'recent_transactions': recent_transactions,
+            
+            # Verification and disputes
+            'pending_verifications': pending_verifications,
+            'active_disputes': active_disputes,
+            
+            # Agent performance (if applicable)
+            'agent_performance': agent_performance,
+            
+            # Platform stats
+            'platform_stats': platform_stats,
         }
+        
         return render(request, self.template_name, context)
+
 
 class APIKeyListView(LoginRequiredMixin, View):
     template_name = 'accounts/api_keys.html'
@@ -275,6 +462,7 @@ class APIKeyListView(LoginRequiredMixin, View):
             messages.success(request, f'API Key created: {api_key.key}')
         return redirect('accounts:api_keys')
 
+
 class UserSettingsView(LoginRequiredMixin, View):
     template_name = 'accounts/settings.html'
     
@@ -282,11 +470,11 @@ class UserSettingsView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'user': request.user})
     
     def post(self, request):
-        # Handle settings updates
         request.user.email_notifications = request.POST.get('email_notifications') == 'on'
         request.user.save()
         messages.success(request, 'Settings updated!')
         return redirect('accounts:settings')
+
 
 class LogoutView(View):
     def get(self, request):
@@ -294,7 +482,6 @@ class LogoutView(View):
         messages.info(request, 'You have been logged out')
         return redirect('accounts:login')
 
-# Add these missing views to your apps/accounts/views.py
 
 class VerifyEmailView(View):
     """Email verification view"""
@@ -302,9 +489,6 @@ class VerifyEmailView(View):
     
     def get(self, request, uidb64, token):
         try:
-            from django.utils.http import urlsafe_base64_decode
-            from django.contrib.auth.tokens import default_token_generator
-            
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
             
@@ -317,7 +501,6 @@ class VerifyEmailView(View):
             else:
                 messages.error(request, 'Invalid verification link')
                 return redirect('accounts:login')
-                
         except Exception:
             messages.error(request, 'Verification failed')
             return redirect('accounts:login')
@@ -327,11 +510,6 @@ class ResendVerificationView(LoginRequiredMixin, View):
     """Resend verification email"""
     
     def post(self, request):
-        from django.utils.http import urlsafe_base64_encode
-        from django.utils.encoding import force_bytes
-        from django.contrib.auth.tokens import default_token_generator
-        from django.urls import reverse
-        
         user = request.user
         
         if user.is_verified:
@@ -342,7 +520,7 @@ class ResendVerificationView(LoginRequiredMixin, View):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         
         verification_link = request.build_absolute_uri(
-            reverse('accounts:verify_email', kwargs={'uidb64': uid, 'token': token})
+            reverse_lazy('accounts:verify_email', kwargs={'uidb64': uid, 'token': token})
         )
         
         send_mail(
@@ -368,16 +546,11 @@ class PasswordResetView(View):
             email = form.cleaned_data['email']
             user = User.objects.filter(email=email).first()
             if user:
-                from django.utils.http import urlsafe_base64_encode
-                from django.utils.encoding import force_bytes
-                from django.contrib.auth.tokens import default_token_generator
-                from django.urls import reverse
-                
                 token = default_token_generator.make_token(user)
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 
                 reset_link = request.build_absolute_uri(
-                    reverse('accounts:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+                    reverse_lazy('accounts:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
                 )
                 
                 send_mail(
@@ -397,9 +570,6 @@ class PasswordResetConfirmView(View):
     
     def get(self, request, uidb64, token):
         try:
-            from django.utils.http import urlsafe_base64_decode
-            from django.contrib.auth.tokens import default_token_generator
-            
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
             
@@ -411,9 +581,6 @@ class PasswordResetConfirmView(View):
             return render(request, self.template_name, {'validlink': False})
     
     def post(self, request, uidb64, token):
-        from django.utils.http import urlsafe_base64_decode
-        from django.contrib.auth.tokens import default_token_generator
-        
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         
@@ -451,7 +618,6 @@ class PasswordResetCompleteView(View):
     def get(self, request):
         return render(request, self.template_name)
 
-# Add this class to your apps/accounts/views.py
 
 class ProfileDeleteView(LoginRequiredMixin, View):
     """Delete user profile/view"""
@@ -462,7 +628,8 @@ class ProfileDeleteView(LoginRequiredMixin, View):
         user.delete()
         messages.success(request, 'Your account has been deleted successfully.')
         return redirect('accounts:login')
-    
+
+
 class APIKeyCreateView(LoginRequiredMixin, View):
     def post(self, request):
         name = request.POST.get('name')
@@ -481,6 +648,7 @@ class APIKeyRevokeView(LoginRequiredMixin, View):
         api_key.delete()
         messages.success(request, 'API Key revoked')
         return redirect('accounts:api_keys')
+
 
 class NotificationSettingsView(LoginRequiredMixin, View):
     template_name = 'accounts/notification_settings.html'
