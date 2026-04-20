@@ -1564,3 +1564,4 @@ INFO 2026-04-20 23:27:06,266 log 14984 11848 "POST /accounts/login/ HTTP/1.1" 30
 INFO 2026-04-20 23:27:06,684 log 14984 11848 "GET /accounts/dashboard/ HTTP/1.1" 200 55123
 INFO 2026-04-20 23:27:39,796 log 14984 11848 "GET /accounts/logout/ HTTP/1.1" 302 0
 INFO 2026-04-20 23:27:40,207 log 14984 11848 "GET /accounts/login/ HTTP/1.1" 200 55712
+INFO 2026-04-20 23:59:21,178 autoreload 14268 16812 Watching for file changes with StatReloader
