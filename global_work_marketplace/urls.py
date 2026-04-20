@@ -5,10 +5,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from apps.common.views import LandingPageView  # Add this import
+from django.views.generic import TemplateView  # Add this import for about page
 
 urlpatterns = [
     # Landing page (public homepage) - Changed from redirect to landing page
     path('', LandingPageView.as_view(), name='landing'),
+    
+    # About page
+    path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
     
     # Super Admin Panel (Main admin interface)
     path('super-admin/', include('apps.super_admin.urls')),

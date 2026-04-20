@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - Global Work Marketplace{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-4">About Global Work Marketplace</h1>
+            
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3>Our Mission</h3>
+                    <p>Global Work Marketplace connects talented professionals with businesses worldwide, creating opportunities for meaningful work and economic growth.</p>
+                    
+                    <h3 class="mt-4">What We Do</h3>
+                    <p>We provide a secure, efficient platform for task management, agent coordination, and seamless payments across borders.</p>
+                    
+                    <h3 class="mt-4">Our Vision</h3>
+                    <p>To build the world's most trusted work marketplace where anyone can find work and any business can find talent.</p>
+                    
+                    <h3 class="mt-4">Key Features</h3>
+                    <ul>
+                        <li>Secure payment processing</li>
+                        <li>Verified professional profiles</li>
+                        <li>Smart task matching</li>
+                        <li>24/7 support</li>
+                        <li>Global reach with local expertise</li>
+                    </ul>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <a href="{% url 'landing' %}" class="btn btn-primary">Back to Home</a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-success">Join Us Today</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

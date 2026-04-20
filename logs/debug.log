@@ -1565,3 +1565,13 @@ INFO 2026-04-20 23:27:06,684 log 14984 11848 "GET /accounts/dashboard/ HTTP/1.1"
 INFO 2026-04-20 23:27:39,796 log 14984 11848 "GET /accounts/logout/ HTTP/1.1" 302 0
 INFO 2026-04-20 23:27:40,207 log 14984 11848 "GET /accounts/login/ HTTP/1.1" 200 55712
 INFO 2026-04-20 23:59:21,178 autoreload 14268 16812 Watching for file changes with StatReloader
+INFO 2026-04-21 00:01:55,226 autoreload 11804 6604 Watching for file changes with StatReloader
+INFO 2026-04-21 00:02:10,345 log 11804 18168 "GET /accounts/login/ HTTP/1.1" 200 55114
+INFO 2026-04-21 00:02:30,843 log 11804 18168 "GET / HTTP/1.1" 200 27688
+WARNING 2026-04-21 00:02:55,741 log 11804 18168 Not Found: /about
+WARNING 2026-04-21 00:02:55,751 log 11804 18168 "GET /about HTTP/1.1" 404 5639
+INFO 2026-04-21 00:07:25,969 autoreload 11804 6604 C:\Users\elish\OneDrive\Desktop\MULTI_BILLION_PROJECT\global_work_marketplace\global_work_marketplace\urls.py changed, reloading.
+INFO 2026-04-21 00:07:39,149 autoreload 9260 1080 Watching for file changes with StatReloader
+INFO 2026-04-21 00:08:25,745 log 9260 10460 "GET / HTTP/1.1" 200 27688
+INFO 2026-04-21 00:08:28,786 log 9260 10460 "GET /about HTTP/1.1" 301 0
+INFO 2026-04-21 00:08:29,084 log 9260 10460 "GET /about/ HTTP/1.1" 200 7563
