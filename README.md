@@ -774,11 +774,11 @@ License
 Proprietary - All Rights Reserved
 
 Contact
-Project Lead: [Name]
+Project Lead: Kidenge Elisha 
 
-Technical Architecture: [Name]
+Technical Architecture: Kidenge Elisha (Backend/AI Systems Lead)
 
-Security & Payments: [Name]
+Security & Payments: Kidenge Elisha (Security & FinTech Systems Lead)
 
 Version History
 Version	Date	Changes
