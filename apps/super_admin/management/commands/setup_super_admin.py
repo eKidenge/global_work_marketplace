@@ -22,14 +22,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
 
-        email = (options["email"] or "").strip()
+        email = (options["email"] or "").strip().lower()
         password = options["password"]
         noinput = options["noinput"]
 
         if not email:
             if noinput:
                 raise CommandError("Missing email and --noinput was set.")
-            email = input("Enter super admin email: ").strip()
+            email = input("Enter super admin email: ").strip().lower()
         if not email:
             raise CommandError("Email is required.")
 
@@ -46,19 +46,21 @@ class Command(BaseCommand):
             raise CommandError("Password rejected: " + "; ".join(e.messages))
 
         with transaction.atomic():
-            # accounts.User — keyed on email, matching AdminUser.__str__ usage.
+            # USERNAME_FIELD == 'email' → lookup on email, keep username in sync.
             user, created = User.objects.get_or_create(
-                email=email,
-                defaults={"username": email},
+                email__iexact=email,
+                defaults={"email": email, "username": email},
             )
 
             # Enforce auth flags regardless of whether the user was just created.
             user.is_staff = True
             user.is_superuser = True
+            # Ensure username is never blank (REQUIRED_FIELDS includes it).
+            if not user.username:
+                user.username = email
             user.set_password(password)
-            user.save(update_fields=["is_staff", "is_superuser", "password"])
+            user.save(update_fields=["is_staff", "is_superuser", "username", "password"])
 
-            # OneToOneField → key on user, not email.
             admin, admin_created = AdminUser.objects.update_or_create(
                 user=user,
                 defaults={
