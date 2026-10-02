@@ -1,760 +1,339 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Super Admin{% endblock %} | Global Work Marketplace</title>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
-        :root {
-            --primary: #1a2b4a;
-            --primary-dark: #0f1c33;
-            --primary-light: #2a3d5f;
-            --accent: #1a2b4a;
-            --accent-hover: #0f1c33;
-            --gold: #b8944d;
-            --success: #065f46;
-            --warning: #92400e;
-            --danger: #991b1b;
-            --info: #1e40af;
-            --bg-main: #f5f1e8;
-            --bg-card: #fdfcf8;
-            --bg-subtle: #faf8f3;
-            --text-primary: #1a2b4a;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border: #c9c2b0;
-            --border-light: #e5e0d3;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif;
-            background: var(--bg-main);
-            color: var(--text-primary);
-            line-height: 1.5;
-            font-size: 14px;
-        }
-
-        .admin-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* ============ SIDEBAR ============ */
-        .sidebar {
-            width: 280px;
-            background: linear-gradient(180deg, #1a2b4a 0%, #0f1c33 100%);
-            color: #f5f1e8;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 50;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
-
-        .sidebar-header {
-            padding: 28px 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            margin-bottom: 16px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 44px;
-            height: 44px;
-            background: var(--gold);
-            color: #1a2b4a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-        }
-
-        .logo-text h2 {
-            font-family: 'Source Serif 4', serif;
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: -0.2px;
-            color: #f5f1e8;
-        }
-
-        .logo-text p {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            opacity: 0.6;
-            margin-top: 2px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .sidebar-nav { padding: 8px 16px 32px; }
-        .nav-section { margin-bottom: 22px; }
-
-        .nav-section-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: rgba(245, 241, 232, 0.35);
-            padding: 0 12px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .nav-item {
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: rgba(245, 241, 232, 0.7);
-            text-decoration: none;
-            transition: background 0.15s ease, color 0.15s ease;
-            margin-bottom: 2px;
-            font-family: 'Source Serif 4', serif;
-            font-size: 13px;
-            font-weight: 500;
-            border-left: 3px solid transparent;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #f5f1e8;
-        }
-
-        .nav-item.active {
-            background: rgba(184, 148, 77, 0.1);
-            color: #f5f1e8;
-            border-left-color: var(--gold);
-        }
-
-        /* Nav group (dropdowns) */
-        .nav-group { position: relative; }
-
-        .nav-item.nav-parent {
-            width: 100%;
-            background: none;
-            border: none;
-            text-align: left;
-            cursor: pointer;
-            font-family: inherit;
-            color: rgba(245, 241, 232, 0.7);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-        }
-
-        .nav-item.nav-parent:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #f5f1e8;
-        }
-
-        .nav-item.nav-parent.active {
-            background: rgba(184, 148, 77, 0.1);
-            color: #f5f1e8;
-            border-left-color: var(--gold);
-        }
-
-        .nav-marker {
-            width: 3px;
-            height: 16px;
-            background: transparent;
-            flex-shrink: 0;
-            transition: background 0.15s ease;
-        }
-
-        .nav-item.active .nav-marker {
-            background: var(--gold);
-        }
-
-        .nav-parent.open .nav-marker {
-            background: var(--gold);
-        }
-
-        .nav-caret {
-            margin-left: auto;
-            width: 7px;
-            height: 7px;
-            border-right: 2px solid currentColor;
-            border-bottom: 2px solid currentColor;
-            transform: rotate(-45deg);
-            transition: transform 0.2s ease;
-            opacity: 0.5;
-            flex-shrink: 0;
-        }
-
-        .nav-parent.open .nav-caret {
-            transform: rotate(45deg);
-        }
-
-        .nav-children {
-            display: none;
-            padding-left: 8px;
-            margin-top: 2px;
-            margin-bottom: 4px;
-            border-left: 1px solid rgba(245, 241, 232, 0.1);
-            margin-left: 15px;
-        }
-
-        .nav-item.nav-child {
-            padding: 8px 12px 8px 20px;
-            font-size: 11px;
-            color: rgba(245, 241, 232, 0.55);
-            border-left: none;
-            font-family: 'IBM Plex Mono', monospace;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .nav-item.nav-child:hover {
-            color: #f5f1e8;
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .nav-item.nav-child.active {
-            color: var(--gold);
-            background: rgba(184, 148, 77, 0.08);
-        }
-
-        /* ============ MAIN CONTENT ============ */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            min-height: 100vh;
-            background: var(--bg-main);
-        }
-
-        /* ============ TOP BAR ============ */
-        .top-bar {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
-
-        .page-title h1 {
-            font-family: 'Source Serif 4', serif;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.4px;
-            color: var(--text-primary);
-        }
-
-        .page-title p {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-avatar {
-            width: 42px;
-            height: 42px;
-            background: var(--primary);
-            color: #f5f1e8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            font-family: 'IBM Plex Mono', monospace;
-        }
-
-        .user-details { text-align: right; }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-primary);
-        }
-
-        .user-role {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .logout-btn {
-            background: none;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            padding: 8px 14px;
-            transition: all 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logout-btn:hover {
-            background: var(--danger);
-            color: #f5f1e8;
-        }
-
-        /* ============ CONTENT AREA ============ */
-        .content-area { padding: 32px; }
-
-        /* ============ STATS GRID ============ */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            padding: 24px;
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
-            transition: border-color 0.15s ease;
-        }
-
-        .stat-card:hover { border-color: var(--primary); }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-            background: var(--primary);
-        }
-
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .stat-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--primary);
-        }
-
-        .stat-value {
-            font-family: 'Source Serif 4', serif;
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.2;
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        .stat-change {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-light);
-            margin-top: 8px;
-            color: var(--text-secondary);
-        }
-
-        .stat-change.positive { color: var(--success); }
-        .stat-change.negative { color: var(--danger); }
-
-        .stat-separator {
-            color: var(--border);
-            margin: 0 6px;
-        }
-
-        /* ============ CARDS ============ */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            margin-bottom: 24px;
-            overflow: hidden;
-        }
-
-        .card-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-subtle);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-title {
-            font-family: 'Source Serif 4', serif;
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .card-title span {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-left: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .card-body { padding: 20px 24px; }
-
-        /* ============ TABLES ============ */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table thead tr { background: var(--primary); }
-
-        .data-table th {
-            background: var(--primary);
-            color: #f5f1e8;
-            padding: 12px 16px;
-            text-align: left;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid var(--gold);
-        }
-
-        .data-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-light);
-            font-size: 14px;
-            color: #1e293b;
-        }
-
-        .data-table tr:hover { background: var(--bg-subtle); }
-        .data-table tbody tr:last-child td { border-bottom: none; }
-
-        /* ============ BADGES ============ */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 3px 10px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid currentColor;
-        }
-
-        .badge-success { background: #ecfdf5; color: #065f46; }
-        .badge-warning { background: #fffbeb; color: #92400e; }
-        .badge-danger  { background: #fef2f2; color: #991b1b; }
-        .badge-info    { background: #eff6ff; color: #1e40af; }
-        .badge-secondary { background: #f5f1e8; color: #475569; }
-
-        /* ============ BUTTONS ============ */
-        .btn {
-            padding: 8px 14px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
-            border: 1px solid transparent;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: #f5f1e8;
-            border-color: var(--primary);
-        }
-
-        .btn-primary:hover { background: var(--primary-dark); }
-
-        .btn-outline {
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: #f0ebdd;
-            border-color: var(--primary);
-        }
-
-        .btn-sm { padding: 5px 10px; font-size: 10px; }
-
-        /* ============ QUICK ACTIONS ============ */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 0;
-            border: 1px solid var(--border-light);
-        }
-
-        .action-card {
-            background: var(--bg-card);
-            border-right: 1px solid var(--border-light);
-            border-bottom: 1px solid var(--border-light);
-            padding: 24px 20px;
-            text-align: center;
-            text-decoration: none;
-            transition: background 0.15s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .action-card:hover { background: var(--bg-subtle); }
-
-        .action-icon { font-size: 26px; filter: grayscale(0.4); }
-
-        .action-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .action-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        /* ============ ALERTS ============ */
-        .alert {
-            padding: 14px 20px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            border-left: 4px solid;
-            border-top: 1px solid var(--border-light);
-            border-right: 1px solid var(--border-light);
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .alert-warning { background: #fffbeb; border-left-color: #b45309; color: #92400e; }
-        .alert-info    { background: #eff6ff; border-left-color: #1e40af; color: #1e40af; }
-        .alert-danger  { background: #fef2f2; border-left-color: #991b1b; color: #991b1b; }
-        .alert-success { background: #ecfdf5; border-left-color: #065f46; color: #065f46; }
-
-        .alert-icon {
-            font-weight: 700;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid currentColor;
-            font-size: 13px;
-        }
-
-        .alert-close {
-            margin-left: auto;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: inherit;
-            opacity: 0.5;
-            line-height: 1;
-        }
-
-        .alert-close:hover { opacity: 1; }
-
-        /* ============ HELPERS ============ */
-        .text-mono {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .text-nowrap { white-space: nowrap; }
-        .text-center { text-align: center; color: #64748b; padding: 32px !important; }
-        .font-medium { font-weight: 600; color: var(--primary); }
-
-        .progress-wrapper { display: flex; align-items: center; gap: 10px; }
-
-        .progress-bar {
-            flex: 1;
-            height: 6px;
-            background: var(--border-light);
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        .progress-label {
-            font-size: 11px;
-            color: var(--primary);
-            min-width: 48px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 600;
-        }
-
-        .admin-container > .card { margin-bottom: 24px; }
-
-        /* ============ SCROLLBAR ============ */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--border-light); }
-        ::-webkit-scrollbar-thumb { background: var(--text-muted); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-
-        /* ============ RESPONSIVE ============ */
-        @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .top-bar { padding: 16px 24px; }
-            .content-area { padding: 24px; }
-        }
-
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .quick-actions { grid-template-columns: 1fr; }
-            .data-table { display: block; overflow-x: auto; }
-            .user-details { display: none; }
-        }
-    </style>
-
-    {% block extra_css %}{% endblock %}
-</head>
-<body>
-    <div class="admin-wrapper">
-        {% include 'super_admin/partials/sidebar.html' %}
-
-        <main class="main-content">
-            <div class="top-bar">
-                <div class="page-title">
-                    {% block page_title %}
-                        <h1>Dashboard</h1>
-                        <p>Welcome back, {{ request.user.get_full_name|default:request.user.email }}</p>
-                    {% endblock %}
-                </div>
-                <div class="user-info">
-                    <div class="user-details">
-                        <div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div>
-                        <div class="user-role">Super Administrator</div>
-                    </div>
-                    <div class="user-avatar">
-                        {{ request.user.email|first|upper }}
-                    </div>
-                    <form method="post" action="{% url 'admin:logout' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="/">
-                        <button type="submit" class="logout-btn">
-                            <span>Logout</span>
-                        </button>
-                    </form>
-                </div>
+{# apps/super_admin/templates/super_admin/partials/sidebar.html #}
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon">GWM</div>
+            <div class="logo-text">
+                <h2>Global Work</h2>
+                <p>Super Admin</p>
             </div>
-
-            <div class="content-area">
-                {% block content %}{% endblock %}
-            </div>
-        </main>
+        </div>
     </div>
 
-    <script>
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('open');
+    <div class="sidebar-nav">
+
+        <!-- ============ CORE ============ -->
+        <div class="nav-section">
+            <div class="nav-section-title">Core</div>
+            <a href="{% url 'super_admin:dashboard' %}"
+               class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <!-- ============ MANAGEMENT ============ -->
+        <div class="nav-section">
+            <div class="nav-section-title">Management</div>
+
+            <div class="nav-group" data-group="agents">
+                <button type="button"
+                        class="nav-item nav-parent {% if 'agents' in request.path %}active{% endif %}"
+                        onclick="toggleGroup('agents')">
+                    <span class="nav-marker"></span>
+                    <span>Agents</span>
+                    <span class="nav-caret"></span>
+                </button>
+                <div class="nav-children" id="group-agents">
+                    <a href="{% url 'super_admin:agents' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'agents' %}active{% endif %}">
+                        All Agents
+                    </a>
+                    <a href="{% url 'super_admin:agent_create' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'agent_create' %}active{% endif %}">
+                        New Agent
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group" data-group="tasks">
+                <button type="button"
+                        class="nav-item nav-parent {% if 'tasks' in request.path %}active{% endif %}"
+                        onclick="toggleGroup('tasks')">
+                    <span class="nav-marker"></span>
+                    <span>Tasks</span>
+                    <span class="nav-caret"></span>
+                </button>
+                <div class="nav-children" id="group-tasks">
+                    <a href="{% url 'super_admin:tasks' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'tasks' %}active{% endif %}">
+                        All Tasks
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group" data-group="payments">
+                <button type="button"
+                        class="nav-item nav-parent {% if 'payments' in request.path %}active{% endif %}"
+                        onclick="toggleGroup('payments')">
+                    <span class="nav-marker"></span>
+                    <span>Payments</span>
+                    <span class="nav-caret"></span>
+                </button>
+                <div class="nav-children" id="group-payments">
+                    <a href="{% url 'super_admin:payments' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'payments' %}active{% endif %}">
+                        Overview
+                    </a>
+                    <a href="{% url 'super_admin:transactions' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
+                        Transactions
+                    </a>
+                    <a href="{% url 'super_admin:wallets' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'wallets' %}active{% endif %}">
+                        Wallets
+                    </a>
+                    <a href="{% url 'super_admin:escrow_list' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'escrow_list' %}active{% endif %}">
+                        Escrow
+                    </a>
+                </div>
+            </div>
+
+            <a href="{% url 'super_admin:disputes' %}"
+               class="nav-item {% if 'disputes' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Disputes</span>
+            </a>
+        </div>
+
+        <!-- ============ INSIGHTS ============ -->
+        <div class="nav-section">
+            <div class="nav-section-title">Insights</div>
+
+            <div class="nav-group" data-group="analytics">
+                <button type="button"
+                        class="nav-item nav-parent {% if 'analytics' in request.path or 'metrics' in request.path or 'alerts' in request.path %}active{% endif %}"
+                        onclick="toggleGroup('analytics')">
+                    <span class="nav-marker"></span>
+                    <span>Analytics</span>
+                    <span class="nav-caret"></span>
+                </button>
+                <div class="nav-children" id="group-analytics">
+                    <a href="{% url 'super_admin:analytics' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                        Overview
+                    </a>
+                    <a href="{% url 'super_admin:metrics' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'metrics' %}active{% endif %}">
+                        Metrics
+                    </a>
+                    <a href="{% url 'super_admin:alerts' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
+                        Alerts
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group" data-group="reports">
+                <button type="button"
+                        class="nav-item nav-parent {% if 'report' in request.path %}active{% endif %}"
+                        onclick="toggleGroup('reports')">
+                    <span class="nav-marker"></span>
+                    <span>Reports</span>
+                    <span class="nav-caret"></span>
+                </button>
+                <div class="nav-children" id="group-reports">
+                    <a href="{% url 'super_admin:reports' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                        All Reports
+                    </a>
+                    <a href="{% url 'super_admin:daily_report' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'daily_report' %}active{% endif %}">
+                        Daily
+                    </a>
+                    <a href="{% url 'super_admin:weekly_report' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'weekly_report' %}active{% endif %}">
+                        Weekly
+                    </a>
+                    <a href="{% url 'super_admin:monthly_report' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'monthly_report' %}active{% endif %}">
+                        Monthly
+                    </a>
+                    <a href="{% url 'super_admin:agent_report' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'agent_report' %}active{% endif %}">
+                        Agent
+                    </a>
+                    <a href="{% url 'super_admin:financial_report' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'financial_report' %}active{% endif %}">
+                        Financial
+                    </a>
+                    <a href="{% url 'super_admin:task_report' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'task_report' %}active{% endif %}">
+                        Task
+                    </a>
+                </div>
+            </div>
+
+            <a href="{% url 'super_admin:audit_logs' %}"
+               class="nav-item {% if 'audit' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Audit Logs</span>
+            </a>
+        </div>
+
+        <!-- ============ ADMINISTRATION ============ -->
+        <div class="nav-section">
+            <div class="nav-section-title">Administration</div>
+
+            <a href="{% url 'super_admin:admin_users' %}"
+               class="nav-item {% if 'admin-users' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Admin Users</span>
+            </a>
+
+            <a href="{% url 'super_admin:announcements' %}"
+               class="nav-item {% if 'announcements' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Announcements</span>
+            </a>
+
+            <a href="{% url 'super_admin:notifications' %}"
+               class="nav-item {% if 'notifications' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Notifications</span>
+            </a>
+
+            <div class="nav-group" data-group="settings">
+                <button type="button"
+                        class="nav-item nav-parent {% if 'settings' in request.path %}active{% endif %}"
+                        onclick="toggleGroup('settings')">
+                    <span class="nav-marker"></span>
+                    <span>Settings</span>
+                    <span class="nav-caret"></span>
+                </button>
+                <div class="nav-children" id="group-settings">
+                    <a href="{% url 'super_admin:settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                        All Settings
+                    </a>
+                    <a href="{% url 'super_admin:general_settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'general_settings' %}active{% endif %}">
+                        General
+                    </a>
+                    <a href="{% url 'super_admin:payment_settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'payment_settings' %}active{% endif %}">
+                        Payments
+                    </a>
+                    <a href="{% url 'super_admin:agent_settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'agent_settings' %}active{% endif %}">
+                        Agents
+                    </a>
+                    <a href="{% url 'super_admin:task_settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'task_settings' %}active{% endif %}">
+                        Tasks
+                    </a>
+                    <a href="{% url 'super_admin:security_settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'security_settings' %}active{% endif %}">
+                        Security
+                    </a>
+                    <a href="{% url 'super_admin:email_settings' %}"
+                       class="nav-item nav-child {% if request.resolver_match.url_name == 'email_settings' %}active{% endif %}">
+                        Email
+                    </a>
+                </div>
+            </div>
+
+            <a href="{% url 'super_admin:api_keys' %}"
+               class="nav-item {% if 'api-keys' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>API Keys</span>
+            </a>
+
+            <a href="{% url 'super_admin:webhooks' %}"
+               class="nav-item {% if 'webhooks' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Webhooks</span>
+            </a>
+
+            <a href="{% url 'super_admin:backup' %}"
+               class="nav-item {% if 'backup' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Backup</span>
+            </a>
+
+            <a href="{% url 'super_admin:system_health' %}"
+               class="nav-item {% if 'health' in request.path %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>System Health</span>
+            </a>
+        </div>
+
+        <!-- ============ ACCOUNT ============ -->
+        <div class="nav-section">
+            <div class="nav-section-title">Account</div>
+
+            <a href="{% url 'super_admin:profile' %}"
+               class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>My Profile</span>
+            </a>
+
+            <a href="{% url 'super_admin:profile_edit' %}"
+               class="nav-item {% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Edit Profile</span>
+            </a>
+
+            <a href="{% url 'super_admin:change_password' %}"
+               class="nav-item {% if request.resolver_match.url_name == 'change_password' %}active{% endif %}">
+                <span class="nav-marker"></span>
+                <span>Change Password</span>
+            </a>
+        </div>
+
+    </div>
+</aside>
+
+<script>
+(function () {
+    const STORAGE_KEY = 'gwm_sidebar_open_groups';
+
+    let openGroups = [];
+    try {
+        openGroups = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    } catch (e) {
+        openGroups = [];
+    }
+
+    // Auto-open any group containing the currently active child link.
+    document.querySelectorAll('.nav-group').forEach(function (group) {
+        const name = group.dataset.group;
+        if (!name) return;
+        const hasActiveChild = group.querySelector('.nav-child.active');
+        if (hasActiveChild && openGroups.indexOf(name) === -1) {
+            openGroups.push(name);
         }
+    });
 
-        document.querySelectorAll('.alert').forEach(alert => {
-            setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            }, 5000);
+    function persist() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
+        } catch (e) { /* storage disabled */ }
+    }
+
+    function render() {
+        document.querySelectorAll('.nav-group').forEach(function (group) {
+            const name = group.dataset.group;
+            if (!name) return;
+            const children = group.querySelector('.nav-children');
+            const parent = group.querySelector('.nav-parent');
+            if (!children || !parent) return;
+
+            const isOpen = openGroups.indexOf(name) !== -1;
+            children.style.display = isOpen ? 'block' : 'none';
+            parent.classList.toggle('open', isOpen);
         });
+    }
 
-        if (window.innerWidth <= 1024) {
-            const topBar = document.querySelector('.top-bar');
-            const menuBtn = document.createElement('button');
-            menuBtn.innerHTML = '&#9776;';
-            menuBtn.style.cssText = 'background:none;border:none;font-size:24px;cursor:pointer;margin-right:16px;color:#1a2b4a;';
-            menuBtn.onclick = toggleSidebar;
-            topBar.insertBefore(menuBtn, topBar.firstChild);
-        }
+    window.toggleGroup = function (name) {
+        const idx = openGroups.indexOf(name);
+        if (idx === -1) openGroups.push(name);
+        else openGroups.splice(idx, 1);
+        persist();
+        render();
+    };
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 1024) {
-                document.querySelector('.sidebar').classList.remove('open');
-            }
-        });
-    </script>
-
-    {% block extra_js %}{% endblock %}
-</body>
-</html>
+    render();
+})();
+</script>
