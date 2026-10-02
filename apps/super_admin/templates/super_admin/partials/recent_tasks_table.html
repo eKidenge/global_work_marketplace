@@ -1,0 +1,26 @@
+{% if recent_tasks %}
+<table class="data-table">
+    <thead>
+        <tr><th>ID</th><th>Title</th><th>Budget</th><th>State</th><th>Created</th></tr>
+    </thead>
+    <tbody>
+        {% for task in recent_tasks %}
+        <tr>
+            <td class="text-mono">{{ task.id|slice:":8" }}</td>
+            <td class="font-medium">{{ task.title|truncatechars:40 }}</td>
+            <td class="text-mono">{{ task.budget_sats|default:0 }} sats</td>
+            <td>
+                {% if task.state == 'completed' %}<span class="badge badge-success">Completed</span>
+                {% elif task.state == 'executing' %}<span class="badge badge-info">Executing</span>
+                {% elif task.state == 'assigned' %}<span class="badge badge-warning">Assigned</span>
+                {% elif task.state == 'failed' %}<span class="badge badge-danger">Failed</span>
+                {% else %}<span class="badge badge-secondary">{{ task.state|title }}</span>{% endif %}
+            </td>
+            <td class="text-mono">{{ task.created_at|timesince }} ago</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-center">No tasks found.</p>
+{% endif %}
