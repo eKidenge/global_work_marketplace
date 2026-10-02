@@ -1114,9 +1114,44 @@ class AdminChangePasswordView(View):
         return render(request, self.template_name)
 
     def post(self, request):
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError
+
         user = request.user
-        if user.check_password(request.POST.get('current_password')):
-            user.set_password(request.POST.get('new_password'))
-            user.save()
-            return redirect('super_admin:login')
-        return render(request, self.template_name, {'error': 'Current password is incorrect'})
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        # 1. Current password must be correct
+        if not user.check_password(current_password):
+            return render(request, self.template_name, {
+                'error': 'Current password is incorrect.'
+            })
+
+        # 2. New password and confirmation must match
+        if new_password != confirm_password:
+            return render(request, self.template_name, {
+                'error': 'New password and confirmation do not match.'
+            })
+
+        # 3. New password must not be the same as the old one
+        if current_password == new_password:
+            return render(request, self.template_name, {
+                'error': 'New password must be different from the current password.'
+            })
+
+        # 4. Run Django's configured password validators
+        try:
+            validate_password(new_password, user=user)
+        except ValidationError as e:
+            return render(request, self.template_name, {
+                'error': ' '.join(e.messages)
+            })
+
+        # 5. Save the new password
+        user.set_password(new_password)
+        user.save()
+
+        # 6. Log out, then send to login page
+        logout(request)
+        return redirect('super_admin:login')
