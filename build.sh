@@ -2,10 +2,6 @@
 # exit on error
 set -o errexit
 
-echo "==> Installing system dependencies"
-apt-get update
-apt-get install -y libpq-dev gcc python3-dev
-
 echo "==> Installing Python dependencies"
 pip install --upgrade pip
 pip install -r requirements/base.txt
