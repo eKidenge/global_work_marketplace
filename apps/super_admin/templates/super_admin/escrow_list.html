@@ -1,0 +1,145 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Escrow{% endblock %}
+
+{% block page_title %}
+    <h1>Escrow Contracts</h1>
+    <p>Funds held in trust between buyers and sellers</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Total Held</span></div>
+        <div class="stat-value" style="font-size: 22px;">{{ total_held|floatformat:0 }}</div>
+        <div class="stat-label">sats in escrow</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Contracts</span></div>
+        <div class="stat-value">{{ escrows|length }}</div>
+        <div class="stat-label">active</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="searchInput" placeholder="Search by task, buyer, or seller..."
+               style="flex: 1; min-width: 240px; padding: 10px 14px; font-size: 14px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+        <select id="statusFilter" style="padding: 10px 14px; font-size: 14px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+            <option value="">All Statuses</option>
+            <option value="held">Held</option>
+            <option value="released">Released</option>
+            <option value="disputed">Disputed</option>
+            <option value="refunded">Refunded</option>
+        </select>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Escrow Registry <span id="visibleCount" class="text-mono" style="margin-left: 8px;">{{ escrows|length }} total</span></div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table" id="escrowTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Task</th>
+                    <th>Buyer</th>
+                    <th>Seller</th>
+                    <th>Amount (sats)</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for escrow in escrows %}
+                <tr data-status="{{ escrow.status }}"
+                    data-search="{{ escrow.id|lower }} {% if escrow.task %}{{ escrow.task.title|lower }}{% endif %} {% if escrow.buyer %}{{ escrow.buyer.email|lower }}{% endif %} {% if escrow.seller %}{{ escrow.seller.email|lower }}{% endif %}">
+
+                    <td class="text-mono">{{ escrow.id|slice:":8" }}</td>
+
+                    <td>
+                        {% if escrow.task %}
+                            <a href="{% url 'super_admin:task_detail' escrow.task.id %}" class="font-medium" style="color: #1a2b4a; text-decoration: none;">
+                                {{ escrow.task.title|truncatechars:40 }}
+                            </a>
+                        {% else %}
+                            <span style="color: #94a3b8;">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-mono">
+                        {% if escrow.buyer %}{{ escrow.buyer.email }}{% else %}—{% endif %}
+                    </td>
+
+                    <td class="text-mono">
+                        {% if escrow.seller %}{{ escrow.seller.email }}{% else %}—{% endif %}
+                    </td>
+
+                    <td class="text-mono text-nowrap">{{ escrow.amount_sats|default:0|floatformat:0 }}</td>
+
+                    <td>
+                        {% if escrow.status == 'held' %}
+                            <span class="badge badge-warning">Held</span>
+                        {% elif escrow.status == 'released' %}
+                            <span class="badge badge-success">Released</span>
+                        {% elif escrow.status == 'disputed' %}
+                            <span class="badge badge-danger">Disputed</span>
+                        {% elif escrow.status == 'refunded' %}
+                            <span class="badge badge-secondary">Refunded</span>
+                        {% else %}
+                            <span class="badge badge-secondary">{{ escrow.status|title|default:"—" }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-mono text-nowrap">{{ escrow.created_at|date:"Y-m-d H:i" }}</td>
+
+                    <td style="text-align: right;">
+                        <a href="{% url 'super_admin:escrow_detail' escrow.id %}" class="btn btn-sm btn-outline">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center">No escrow contracts found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const searchInput  = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const table        = document.getElementById('escrowTable');
+    const visibleCount = document.getElementById('visibleCount');
+    const allRows      = Array.from(table.querySelectorAll('tbody tr[data-status]'));
+
+    function applyFilters() {
+        const q      = (searchInput.value || '').trim().toLowerCase();
+        const status = statusFilter.value;
+        let visible = 0;
+
+        allRows.forEach(row => {
+            const matchesSearch = !q || row.dataset.search.includes(q);
+            const matchesStatus = !status || row.dataset.status === status;
+            const show = matchesSearch && matchesStatus;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        visibleCount.textContent = visible + ' of ' + allRows.length + ' shown';
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    applyFilters();
+})();
+</script>
+{% endblock %}
