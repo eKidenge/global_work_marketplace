@@ -1,0 +1,58 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Monthly Report{% endblock %}
+
+{% block extra_css %}
+<style>
+.report-header{border-bottom:2px solid #1a2b4a;padding-bottom:16px;margin-bottom:24px;}
+.report-header h2{font-size:26px;font-weight:700;color:#1a2b4a;margin-bottom:6px;font-family:'Source Serif 4',serif;}
+.report-header .report-sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;}
+.detail-grid{display:grid;grid-template-columns:220px 1fr;border:1px solid #e5e0d3;background:#fdfcf8;}
+.detail-label{padding:12px 16px;background:#faf8f3;border-bottom:1px solid #e5e0d3;border-right:1px solid #e5e0d3;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1a2b4a;font-weight:600;font-family:'IBM Plex Mono',monospace;display:flex;align-items:center;}
+.detail-value{padding:12px 16px;border-bottom:1px solid #e5e0d3;font-size:14px;color:#1e293b;}
+.text-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#64748b;}
+</style>
+{% endblock %}
+
+{% block page_title %}
+    <h1>Monthly Report</h1>
+    <p>Month-end operations and performance summary</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-body" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end;">
+        <button class="btn btn-primary" onclick="window.print()">Print Report</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="report-header">
+            <h2>Monthly Operations Report</h2>
+            <div class="report-sub">Generated: {% now "Y-m-d H:i:s" %} UTC</div>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-label">Report Type</div>
+            <div class="detail-value">Monthly Summary</div>
+
+            <div class="detail-label">Period</div>
+            <div class="detail-value text-mono">{% now "F Y" %}</div>
+
+            <div class="detail-label">System</div>
+            <div class="detail-value">Global Work Marketplace</div>
+
+            <div class="detail-label">Status</div>
+            <div class="detail-value">Complete</div>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: #faf8f3; border: 1px solid #e5e0d3; font-size: 13px; color: #64748b; font-style: italic;">
+            Detailed monthly metrics are available on the Analytics page. This report is a print-ready summary shell.
+        </div>
+    </div>
+</div>
+
+{% endblock %}
