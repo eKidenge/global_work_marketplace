@@ -1,0 +1,84 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+body,.card,.data-table,.btn,input,select{font-family:'Source Serif 4','Times New Roman',Georgia,serif !important;}
+.card-title,.badge,.btn,.text-mono,.detail-label,.stat-title,.action-title{font-family:'IBM Plex Mono','Courier New',monospace !important;letter-spacing:0.3px;}
+.card{border:1px solid #c9c2b0;border-radius:0;box-shadow:none;background:#fdfcf8;}
+.card-header{border-bottom:1px solid #c9c2b0;background:#faf8f3;padding:16px 24px;}
+.card-title{font-size:17px;font-weight:700;color:#1a2b4a;}
+.card-body{padding:24px;}
+.btn{padding:8px 14px;border-radius:0;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;}
+.btn-primary{background:#1a2b4a;color:#f5f1e8;border-color:#1a2b4a;}
+.btn-primary:hover{background:#0f1c33;}
+.btn-outline{background:#faf8f3;border:1px solid #c9c2b0;color:#1a2b4a;}
+.btn-outline:hover{background:#f0ebdd;border-color:#1a2b4a;}
+.content-area{background:#f5f1e8;}
+.text-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#64748b;}
+.report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0;border:1px solid #e5e0d3;}
+.report-card{background:#fdfcf8;padding:24px;border-right:1px solid #e5e0d3;border-bottom:1px solid #e5e0d3;text-decoration:none;display:flex;flex-direction:column;gap:10px;transition:background 0.15s ease;}
+.report-card:hover{background:#faf8f3;}
+.report-icon{font-size:26px;filter:grayscale(0.4);}
+.report-title{font-family:'IBM Plex Mono',monospace;font-weight:600;color:#1a2b4a;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;}
+.report-desc{font-size:13px;color:#64748b;line-height:1.5;}
+</style>
+{% endblock %}
+
+{% block page_title %}
+    <h1>Reports</h1>
+    <p>Generate, view, and export operational reports</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Available Reports</div></div>
+    <div class="card-body" style="padding: 0;">
+        <div class="report-grid">
+            <a href="{% url 'super_admin:daily_report' %}" class="report-card">
+                <div class="report-icon">📅</div>
+                <div class="report-title">Daily Report</div>
+                <div class="report-desc">Operations summary for a single day. Task counts, revenue, and system status.</div>
+            </a>
+            <a href="{% url 'super_admin:weekly_report' %}" class="report-card">
+                <div class="report-icon">📆</div>
+                <div class="report-title">Weekly Report</div>
+                <div class="report-desc">Rolling seven-day performance, agent activity, and payment throughput.</div>
+            </a>
+            <a href="{% url 'super_admin:monthly_report' %}" class="report-card">
+                <div class="report-icon">🗓️</div>
+                <div class="report-title">Monthly Report</div>
+                <div class="report-desc">Month-end summary with success rates, volume totals, and growth metrics.</div>
+            </a>
+            <a href="{% url 'super_admin:agent_report' %}" class="report-card">
+                <div class="report-icon">🤖</div>
+                <div class="report-title">Agent Report</div>
+                <div class="report-desc">Task completion, success rate, and revenue broken down by agent.</div>
+            </a>
+            <a href="{% url 'super_admin:financial_report' %}" class="report-card">
+                <div class="report-icon">💰</div>
+                <div class="report-title">Financial Report</div>
+                <div class="report-desc">Revenue, settlement, escrow balances, and platform fees.</div>
+            </a>
+            <a href="{% url 'super_admin:task_report' %}" class="report-card">
+                <div class="report-icon">📋</div>
+                <div class="report-title">Task Report</div>
+                <div class="report-desc">Task distribution by state, completion trends, and failure analysis.</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">Export Data</div></div>
+    <div class="card-body" style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="{% url 'super_admin:export_report' 'tasks' %}" class="btn btn-primary">Export Tasks (CSV)</a>
+        <a href="{% url 'super_admin:audit_log_export' %}" class="btn btn-primary">Export Audit Logs (CSV)</a>
+    </div>
+</div>
+
+{% endblock %}
