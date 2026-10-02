@@ -1,0 +1,62 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">
+                <h2>Work Marketplace</h2>
+                <p>Super Admin Portal</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">Core</div>
+            <a href="{% url 'super_admin:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">📊</span><span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Management</div>
+            <a href="{% url 'super_admin:agents' %}" class="nav-item {% if 'agents' in request.path %}active{% endif %}">
+                <span class="nav-icon">🤖</span><span>Agents</span>
+            </a>
+            <a href="{% url 'super_admin:tasks' %}" class="nav-item {% if 'tasks' in request.path %}active{% endif %}">
+                <span class="nav-icon">📋</span><span>Tasks</span>
+            </a>
+            <a href="{% url 'super_admin:payments' %}" class="nav-item {% if 'payments' in request.path %}active{% endif %}">
+                <span class="nav-icon">💰</span><span>Payments</span>
+            </a>
+            <a href="{% url 'super_admin:disputes' %}" class="nav-item {% if 'disputes' in request.path %}active{% endif %}">
+                <span class="nav-icon">⚖️</span><span>Disputes</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Insights</div>
+            <a href="{% url 'super_admin:analytics' %}" class="nav-item {% if 'analytics' in request.path %}active{% endif %}">
+                <span class="nav-icon">📈</span><span>Analytics</span>
+            </a>
+            <a href="{% url 'super_admin:audit_logs' %}" class="nav-item {% if 'audit' in request.path %}active{% endif %}">
+                <span class="nav-icon">📜</span><span>Audit Logs</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Administration</div>
+            <a href="{% url 'super_admin:admin_users' %}" class="nav-item {% if 'admin-users' in request.path %}active{% endif %}">
+                <span class="nav-icon">👥</span><span>Admin Users</span>
+            </a>
+            <a href="{% url 'super_admin:announcements' %}" class="nav-item {% if 'announcements' in request.path %}active{% endif %}">
+                <span class="nav-icon">📢</span><span>Announcements</span>
+            </a>
+            <a href="{% url 'super_admin:settings' %}" class="nav-item {% if 'settings' in request.path %}active{% endif %}">
+                <span class="nav-icon">⚙️</span><span>Settings</span>
+            </a>
+            <a href="{% url 'super_admin:system_health' %}" class="nav-item {% if 'health' in request.path %}active{% endif %}">
+                <span class="nav-icon">🖥️</span><span>System Health</span>
+            </a>
+        </div>
+    </div>
+</aside>
