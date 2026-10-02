@@ -41,6 +41,8 @@ urlpatterns = [
     path('verification/', include('apps.verification.urls')),
     path('support/', include('apps.support.urls')),
     path('webhooks/', include('apps.webhooks.urls')),
+
+    path('accounts/social/', include('social_django.urls', namespace='social')),
 ]
 
 if settings.DEBUG:
