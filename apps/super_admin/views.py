@@ -851,7 +851,7 @@ class AnnouncementToggleView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class DisputeListView(View):
-    template_name = 'super_admin/disputes.html'
+    template_name = 'super_admin//disputes/list.html'
 
     def get(self, request):
         disputes = Dispute.objects.select_related('task', 'raised_by').all().order_by('-created_at')
@@ -860,7 +860,7 @@ class DisputeListView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class DisputeDetailView(View):
-    template_name = 'super_admin/disputes/dispute_detail.html'
+    template_name = 'super_admin/disputes/detail.html'
 
     def get(self, request, dispute_id):
         dispute = get_object_or_404(Dispute, id=dispute_id)
