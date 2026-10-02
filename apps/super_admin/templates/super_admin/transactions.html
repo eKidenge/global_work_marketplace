@@ -1,0 +1,103 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block page_title %}
+    <h1>Transactions</h1>
+    <p>Complete ledger of all platform payments</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Total Volume</span></div>
+        <div class="stat-value" style="font-size: 22px;">{{ total_volume|floatformat:0 }}</div>
+        <div class="stat-label">sats</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Shown</span></div>
+        <div class="stat-value">{{ transactions|length }}</div>
+        <div class="stat-label">records</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <form method="get" style="display: flex; gap: 12px; align-items: center; flex: 1; flex-wrap: wrap;">
+            <select name="status" style="padding: 10px 14px; font-size: 14px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+                <option value="">All Statuses</option>
+                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="failed" {% if selected_status == 'failed' %}selected{% endif %}>Failed</option>
+                <option value="refunded" {% if selected_status == 'refunded' %}selected{% endif %}>Refunded</option>
+            </select>
+            <select name="type" style="padding: 10px 14px; font-size: 14px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+                <option value="">All Types</option>
+                <option value="deposit" {% if selected_type == 'deposit' %}selected{% endif %}>Deposit</option>
+                <option value="withdrawal" {% if selected_type == 'withdrawal' %}selected{% endif %}>Withdrawal</option>
+                <option value="payment" {% if selected_type == 'payment' %}selected{% endif %}>Payment</option>
+                <option value="refund" {% if selected_type == 'refund' %}selected{% endif %}>Refund</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            {% if selected_status or selected_type %}
+                <a href="{% url 'super_admin:transactions' %}" class="btn btn-outline">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Transaction Ledger</div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr>
+                    <td class="text-mono">{{ tx.id|slice:":8" }}</td>
+                    <td class="text-mono">{% if tx.from_wallet %}{{ tx.from_wallet.id|slice:":8" }}{% else %}—{% endif %}</td>
+                    <td class="text-mono">{% if tx.to_wallet %}{{ tx.to_wallet.id|slice:":8" }}{% else %}—{% endif %}</td>
+                    <td class="text-mono text-nowrap">{{ tx.amount_sats|default:0 }} sats</td>
+                    <td>
+                        {% if tx.type == 'deposit' %}<span class="badge badge-success">Deposit</span>
+                        {% elif tx.type == 'withdrawal' %}<span class="badge badge-warning">Withdrawal</span>
+                        {% elif tx.type == 'payment' %}<span class="badge badge-info">Payment</span>
+                        {% elif tx.type == 'refund' %}<span class="badge badge-secondary">Refund</span>
+                        {% else %}<span class="badge badge-secondary">{{ tx.type|default:"—" }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if tx.status == 'completed' %}<span class="badge badge-success">Completed</span>
+                        {% elif tx.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                        {% elif tx.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+                        {% elif tx.status == 'refunded' %}<span class="badge badge-secondary">Refunded</span>
+                        {% else %}<span class="badge badge-secondary">{{ tx.status|default:"—" }}</span>{% endif %}
+                    </td>
+                    <td class="text-mono text-nowrap">{{ tx.created_at|timesince }} ago</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'super_admin:transaction_detail' tx.id %}" class="btn btn-sm btn-outline">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center">No transactions found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
