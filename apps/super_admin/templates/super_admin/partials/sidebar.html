@@ -1,62 +1,90 @@
-<aside class="sidebar">
-    <div class="sidebar-header">
-        <div class="logo">
-            <div class="logo-icon">⚡</div>
-            <div class="logo-text">
-                <h2>Work Marketplace</h2>
-                <p>Super Admin Portal</p>
-            </div>
-        </div>
-    </div>
+/* Nav group (dropdowns) */
+.nav-group { position: relative; }
 
-    <div class="sidebar-nav">
-        <div class="nav-section">
-            <div class="nav-section-title">Core</div>
-            <a href="{% url 'super_admin:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <span class="nav-icon">📊</span><span>Dashboard</span>
-            </a>
-        </div>
+.nav-item.nav-parent {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    color: rgba(245, 241, 232, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-        <div class="nav-section">
-            <div class="nav-section-title">Management</div>
-            <a href="{% url 'super_admin:agents' %}" class="nav-item {% if 'agents' in request.path %}active{% endif %}">
-                <span class="nav-icon">🤖</span><span>Agents</span>
-            </a>
-            <a href="{% url 'super_admin:tasks' %}" class="nav-item {% if 'tasks' in request.path %}active{% endif %}">
-                <span class="nav-icon">📋</span><span>Tasks</span>
-            </a>
-            <a href="{% url 'super_admin:payments' %}" class="nav-item {% if 'payments' in request.path %}active{% endif %}">
-                <span class="nav-icon">💰</span><span>Payments</span>
-            </a>
-            <a href="{% url 'super_admin:disputes' %}" class="nav-item {% if 'disputes' in request.path %}active{% endif %}">
-                <span class="nav-icon">⚖️</span><span>Disputes</span>
-            </a>
-        </div>
+.nav-item.nav-parent:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f5f1e8;
+}
 
-        <div class="nav-section">
-            <div class="nav-section-title">Insights</div>
-            <a href="{% url 'super_admin:analytics' %}" class="nav-item {% if 'analytics' in request.path %}active{% endif %}">
-                <span class="nav-icon">📈</span><span>Analytics</span>
-            </a>
-            <a href="{% url 'super_admin:audit_logs' %}" class="nav-item {% if 'audit' in request.path %}active{% endif %}">
-                <span class="nav-icon">📜</span><span>Audit Logs</span>
-            </a>
-        </div>
+.nav-item.nav-parent.active {
+    background: rgba(184, 148, 77, 0.12);
+    color: #f5f1e8;
+    border-left-color: var(--gold);
+}
 
-        <div class="nav-section">
-            <div class="nav-section-title">Administration</div>
-            <a href="{% url 'super_admin:admin_users' %}" class="nav-item {% if 'admin-users' in request.path %}active{% endif %}">
-                <span class="nav-icon">👥</span><span>Admin Users</span>
-            </a>
-            <a href="{% url 'super_admin:announcements' %}" class="nav-item {% if 'announcements' in request.path %}active{% endif %}">
-                <span class="nav-icon">📢</span><span>Announcements</span>
-            </a>
-            <a href="{% url 'super_admin:settings' %}" class="nav-item {% if 'settings' in request.path %}active{% endif %}">
-                <span class="nav-icon">⚙️</span><span>Settings</span>
-            </a>
-            <a href="{% url 'super_admin:system_health' %}" class="nav-item {% if 'health' in request.path %}active{% endif %}">
-                <span class="nav-icon">🖥️</span><span>System Health</span>
-            </a>
-        </div>
-    </div>
-</aside>
+/* The gold marker bar */
+.nav-marker {
+    width: 3px;
+    height: 16px;
+    background: transparent;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+}
+
+.nav-item.active .nav-marker {
+    background: var(--gold);
+}
+
+.nav-parent.open .nav-marker {
+    background: var(--gold);
+}
+
+/* Caret (arrow) for dropdowns */
+.nav-caret {
+    margin-left: auto;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.nav-parent.open .nav-caret {
+    transform: rotate(45deg);
+}
+
+/* Dropdown children */
+.nav-children {
+    display: none;
+    padding-left: 8px;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    border-left: 1px solid rgba(245, 241, 232, 0.1);
+    margin-left: 15px;
+}
+
+.nav-item.nav-child {
+    padding: 8px 12px 8px 20px;
+    font-size: 12px;
+    color: rgba(245, 241, 232, 0.55);
+    border-left: none;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.nav-item.nav-child:hover {
+    color: #f5f1e8;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-item.nav-child.active {
+    color: var(--gold);
+    background: rgba(184, 148, 77, 0.08);
+}
