@@ -1,4 +1,3 @@
-<!-- apps/super_admin/templates/super_admin/dashboard.html -->
 {% extends "super_admin/base.html" %}
 {% load static %}
 
@@ -6,398 +5,218 @@
 
 {% block extra_css %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
-body,
-.sidebar,
-.top-bar,
-.card,
-.data-table,
-.btn,
-input,
-select {
-    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+.dash-section{margin-bottom:32px;}
+.dash-section-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:#1a2b4a;
+    padding-bottom:10px;
+    border-bottom:2px solid #1a2b4a;
+    margin-bottom:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
-.data-table th,
-.stat-title,
-.nav-section-title,
-label,
-.badge,
-.btn,
-.stat-label,
-.stat-change,
-.progress-label {
-    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
-    letter-spacing: 0.3px;
+/* Compact stats */
+.stat-strip{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:0;
+    border:1px solid #c9c2b0;
+    background:#fdfcf8;
+    margin-bottom:32px;
+}
+.stat-strip .stat-card{
+    border:none;
+    border-right:1px solid #e5e0d3;
+    border-radius:0;
+    padding:20px 24px;
+    position:relative;
+}
+.stat-strip .stat-card:last-child{border-right:none;}
+.stat-strip .stat-card::before{display:none;}
+.stat-strip .stat-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#64748b;
+    padding:0;
+    border:none;
+    margin-bottom:10px;
+    display:block;
+}
+.stat-strip .stat-value{
+    font-family:'Source Serif 4',serif;
+    font-size:30px;
+    font-weight:700;
+    color:#1a2b4a;
+    line-height:1;
+    margin-bottom:8px;
+}
+.stat-strip .stat-sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+}
+.stat-strip .stat-sub.positive{color:#065f46;}
+.stat-strip .stat-sub.negative{color:#991b1b;}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px;}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:32px;}
+
+@media(max-width:1024px){
+    .grid-2,.grid-3,.grid-2-1{grid-template-columns:1fr;}
 }
 
-.stat-value,
-.page-title h1,
-.card-title {
-    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
-    font-weight: 700;
+/* Progress */
+.progress-wrapper{display:flex;align-items:center;gap:10px;}
+.progress-bar{
+    flex:1;
+    height:6px;
+    background:#e5e0d3;
+    border:1px solid #c9c2b0;
+    overflow:hidden;
+}
+.progress-fill{height:100%;background:#1a2b4a;transition:width 0.3s ease;}
+.progress-fill.gold{background:#b8944d;}
+.progress-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#1a2b4a;
+    min-width:48px;
+    font-weight:600;
 }
 
-/* Card treatment */
-.card,
-.stat-card {
-    border: 1px solid #c9c2b0;
-    border-radius: 0;
-    box-shadow: none;
-    background: #fdfcf8;
+/* Simple bar chart */
+.chart-bars{
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:120px;
+    padding:16px 24px;
+    border:1px solid #e5e0d3;
+    background:#fdfcf8;
+}
+.chart-bars .bar{
+    flex:1;
+    background:#1a2b4a;
+    min-height:2px;
+    transition:background 0.15s;
+    position:relative;
+}
+.chart-bars .bar:hover{background:#b8944d;}
+
+/* Horizontal data bars */
+.hbar-row{
+    display:grid;
+    grid-template-columns:140px 1fr 60px;
+    gap:12px;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid #e5e0d3;
+}
+.hbar-row:last-child{border-bottom:none;}
+.hbar-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#1a2b4a;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    font-weight:600;
+}
+.hbar-track{
+    height:8px;
+    background:#e5e0d3;
+    border:1px solid #c9c2b0;
+    overflow:hidden;
+}
+.hbar-fill{height:100%;background:#1a2b4a;}
+.hbar-fill.gold{background:#b8944d;}
+.hbar-value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#64748b;
+    text-align:right;
 }
 
-.card-header {
-    border-bottom: 1px solid #c9c2b0;
-    background: #faf8f3;
-    padding: 16px 24px;
+/* Quick actions — dense, no icons */
+.qactions{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:0;
+    border:1px solid #c9c2b0;
+    background:#fdfcf8;
 }
-
-.card-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: #1a2b4a;
-    letter-spacing: -0.2px;
+.qaction{
+    padding:18px 20px;
+    border-right:1px solid #e5e0d3;
+    border-bottom:1px solid #e5e0d3;
+    text-decoration:none;
+    display:block;
+    transition:background 0.15s;
 }
-
-/* Stat cards */
-.stat-card {
-    padding: 20px 24px;
-    position: relative;
-    overflow: hidden;
+.qaction:hover{background:#faf8f3;}
+.qaction-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    color:#1a2b4a;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:4px;
 }
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #1a2b4a;
-}
-
-.stat-card:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: #1a2b4a;
-}
-
-.stat-title {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #1a2b4a;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #e5e0d3;
-    display: block;
-    margin-bottom: 12px;
-}
-
-.stat-header {
-    margin-bottom: 4px;
-}
-
-.stat-value {
-    font-size: 34px;
-    font-weight: 700;
-    color: #1a2b4a;
-    line-height: 1.1;
-    margin-bottom: 8px;
-    font-family: 'Source Serif 4', 'Times New Roman', serif !important;
-}
-
-.stat-label {
-    font-size: 11px;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 10px;
-}
-
-.stat-change {
-    font-size: 11px;
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding-top: 10px;
-    border-top: 1px solid #e5e0d3;
-    margin-top: 4px;
-    text-transform: uppercase;
-}
-
-.stat-change.positive { color: #065f46; }
-.stat-change.negative { color: #991b1b; }
-
-.stat-separator {
-    color: #c9c2b0;
-    margin: 0 6px;
+.qaction-desc{
+    font-size:12px;
+    color:#64748b;
+    line-height:1.4;
 }
 
 /* Alerts */
-.alerts-container {
-    margin-bottom: 24px;
+.alert{
+    padding:14px 20px;
+    margin-bottom:12px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+    border-left:4px solid;
+    border-top:1px solid #e5e0d3;
+    border-right:1px solid #e5e0d3;
+    border-bottom:1px solid #e5e0d3;
 }
+.alert-warning{background:#fffbeb;border-left-color:#b45309;color:#92400e;}
+.alert-info{background:#eff6ff;border-left-color:#1e40af;color:#1e40af;}
+.alert-critical{background:#fef2f2;border-left-color:#991b1b;color:#991b1b;}
+.alert-danger{background:#fef2f2;border-left-color:#991b1b;color:#991b1b;}
+.alert-success{background:#ecfdf5;border-left-color:#065f46;color:#065f46;}
 
-.alert {
-    border-radius: 0;
-    border-left-width: 4px;
-    padding: 14px 20px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    border-top: 1px solid #e5e0d3;
-    border-right: 1px solid #e5e0d3;
-    border-bottom: 1px solid #e5e0d3;
+/* Section header link */
+.section-action{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    font-weight:600;
+    color:#1a2b4a;
+    text-decoration:none;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:4px 10px;
+    border:1px solid #c9c2b0;
+    background:#faf8f3;
 }
-
-.alert-icon {
-    font-weight: 700;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid currentColor;
-    font-size: 13px;
-}
-
-.alert-close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: inherit;
-    opacity: 0.5;
-    line-height: 1;
-}
-
-.alert-close:hover { opacity: 1; }
-
-.alert-warning { background: #fffbeb; border-left-color: #b45309; color: #92400e; }
-.alert-info    { background: #eff6ff; border-left-color: #1e40af; color: #1e40af; }
-.alert-danger  { background: #fef2f2; border-left-color: #991b1b; color: #991b1b; }
-.alert-success { background: #ecfdf5; border-left-color: #065f46; color: #065f46; }
-
-/* Quick Actions */
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0;
-    border: 1px solid #e5e0d3;
-}
-
-.action-card {
-    background: #fdfcf8;
-    padding: 24px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    border-right: 1px solid #e5e0d3;
-    border-bottom: 1px solid #e5e0d3;
-    transition: background 0.15s ease;
-}
-
-.action-card:hover {
-    background: #faf8f3;
-    transform: none;
-    box-shadow: none;
-    border-color: #e5e0d3;
-}
-
-.action-card:hover .action-title {
-    color: #1a2b4a;
-}
-
-.action-icon {
-    font-size: 26px;
-    filter: grayscale(0.4);
-}
-
-.action-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-    color: #1a2b4a;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.action-desc {
-    font-size: 12px;
-    color: #64748b;
-    line-height: 1.4;
-}
-
-/* Data tables */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data-table thead tr {
-    background: #1a2b4a;
-}
-
-.data-table th {
-    background: #1a2b4a;
-    color: #f5f1e8;
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 2px solid #b8944d;
-    font-family: 'IBM Plex Mono', monospace;
-}
-
-.data-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #e5e0d3;
-    font-size: 14px;
-    color: #1e293b;
-}
-
-.data-table tr:hover {
-    background: #faf8f3;
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Badges */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 0;
-    font-size: 10px;
-    font-weight: 600;
-    gap: 6px;
-    border: 1px solid currentColor;
-    font-family: 'IBM Plex Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.badge-success { background: #ecfdf5; color: #065f46; }
-.badge-warning { background: #fffbeb; color: #92400e; }
-.badge-danger  { background: #fef2f2; color: #991b1b; }
-.badge-info    { background: #eff6ff; color: #1e40af; }
-.badge-secondary { background: #f5f1e8; color: #475569; }
-
-/* Buttons */
-.btn {
-    padding: 8px 14px;
-    border-radius: 0;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease;
-    border: 1px solid transparent;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'IBM Plex Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-primary {
-    background: #1a2b4a;
-    color: #f5f1e8;
-    border-color: #1a2b4a;
-}
-
-.btn-primary:hover { background: #0f1c33; }
-
-.btn-outline {
-    background: #faf8f3;
-    border: 1px solid #c9c2b0;
-    color: #1a2b4a;
-}
-
-.btn-outline:hover {
-    background: #f0ebdd;
-    border-color: #1a2b4a;
-}
-
-.btn-sm {
-    padding: 5px 10px;
-    font-size: 10px;
-}
-
-/* Typography helpers */
-.text-mono {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: #64748b;
-}
-
-.text-nowrap { white-space: nowrap; }
-.text-center { text-align: center; color: #64748b; padding: 32px !important; }
-.font-medium { font-weight: 600; color: #1a2b4a; }
-
-/* Progress bar */
-.progress-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.progress-bar {
-    flex: 1;
-    height: 6px;
-    background: #e5e0d3;
-    border-radius: 0;
-    overflow: hidden;
-    border: 1px solid #c9c2b0;
-}
-
-.progress-fill {
-    height: 100%;
-    background: #1a2b4a;
-    transition: width 0.3s ease;
-}
-
-.progress-label {
-    font-size: 11px;
-    color: #1a2b4a;
-    min-width: 48px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 600;
-}
-
-/* Content area */
-.content-area {
-    background: #f5f1e8;
-}
-
-.admin-container > .card {
-    margin-bottom: 24px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .quick-actions { grid-template-columns: 1fr; }
-    .action-card { border-right: none; }
-    .stat-value { font-size: 28px; }
-}
+.section-action:hover{background:#1a2b4a;color:#f5f1e8;border-color:#1a2b4a;}
 </style>
 {% endblock %}
 
@@ -407,160 +226,193 @@ label,
 {% endblock %}
 
 {% block content %}
-<div class="admin-container">
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-title">Total Agents</span>
-            </div>
-            <div class="stat-value">{{ stats.total_agents|default:0 }}</div>
-            <div class="stat-change">
-                <span>AI: {{ stats.ai_agents|default:0 }}</span>
-                <span class="stat-separator">|</span>
-                <span>Human: {{ stats.human_agents|default:0 }}</span>
-            </div>
-            <div class="stat-change {% if stats.online_agents > 0 %}positive{% else %}negative{% endif %}">
-                {{ stats.online_agents|default:0 }} agents online
-            </div>
-        </div>
 
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-title">Active Tasks</span>
-            </div>
-            <div class="stat-value">{{ stats.active_tasks|default:0 }}</div>
-            <div class="stat-change">
-                Completed today: {{ stats.completed_today|default:0 }}
-            </div>
-            <div class="stat-change">
-                Average: {{ stats.avg_completion_time|floatformat:0|default:0 }}ms
-            </div>
-        </div>
+<!-- ============ SYSTEM ALERTS ============ -->
+{% if system_alerts %}
+<div style="margin-bottom: 24px;">
+    {% for alert in system_alerts %}
+    <div class="alert alert-{{ alert.type }}">
+        <span>{{ alert.message }}</span>
+        <button class="alert-close" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:inherit;opacity:0.5;" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-title">Total Volume</span>
-            </div>
-            <div class="stat-value">{{ stats.total_volume|floatformat:0|default:0 }}</div>
-            <div class="stat-label">sats</div>
-            <div class="stat-change positive">
-                {{ stats.success_rate|floatformat:1|default:0 }}% success rate
-            </div>
+<!-- ============ STATS STRIP ============ -->
+<div class="stat-strip">
+    <div class="stat-card">
+        <span class="stat-title">Total Agents</span>
+        <div class="stat-value">{{ stats.total_agents|default:0 }}</div>
+        <div class="stat-sub">
+            AI: {{ stats.ai_agents|default:0 }} &nbsp;·&nbsp; Human: {{ stats.human_agents|default:0 }}
         </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-title">Platform Health</span>
-            </div>
-            <div class="stat-value">{{ stats.total_tasks|default:0 }}</div>
-            <div class="stat-label">Total tasks processed</div>
-            <div class="stat-change positive">
-                System operational
-            </div>
+        <div class="stat-sub {% if stats.online_agents > 0 %}positive{% else %}negative{% endif %}" style="margin-top:6px;">
+            {{ stats.online_agents|default:0 }} online now
         </div>
     </div>
 
-    <!-- System Alerts -->
-    {% if system_alerts %}
-    <div class="alerts-container">
-        {% for alert in system_alerts %}
-        <div class="alert alert-{{ alert.type }}">
-            <span class="alert-icon">!</span>
-            <span>{{ alert.message }}</span>
-            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
-        </div>
-        {% endfor %}
+    <div class="stat-card">
+        <span class="stat-title">Active Tasks</span>
+        <div class="stat-value">{{ stats.active_tasks|default:0 }}</div>
+        <div class="stat-sub">{{ stats.completed_today|default:0 }} completed today</div>
+        <div class="stat-sub" style="margin-top:6px;">{{ stats.total_tasks|default:0 }} total processed</div>
     </div>
-    {% endif %}
 
-    <!-- Quick Actions -->
-    <div class="card">
+    <div class="stat-card">
+        <span class="stat-title">Total Volume</span>
+        <div class="stat-value">{{ stats.total_volume|floatformat:0|default:0 }}</div>
+        <div class="stat-sub">sats settled</div>
+        <div class="stat-sub positive" style="margin-top:6px;">{{ stats.today_volume|floatformat:0|default:0 }} today</div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-title">Success Rate</span>
+        <div class="stat-value">{{ stats.success_rate|floatformat:1|default:0 }}<span style="font-size:18px;">%</span></div>
+        <div class="stat-sub">platform-wide</div>
+        <div class="stat-sub positive" style="margin-top:6px;">System operational</div>
+    </div>
+</div>
+
+<!-- ============ QUICK ACTIONS ============ -->
+<div class="dash-section">
+    <div class="dash-section-title">
+        <span>Quick Actions</span>
+    </div>
+    <div class="qactions">
+        <a href="{% url 'super_admin:agents' %}" class="qaction">
+            <div class="qaction-title">Manage Agents</div>
+            <div class="qaction-desc">View, edit, and audit all registered agents</div>
+        </a>
+        <a href="{% url 'super_admin:tasks' %}" class="qaction">
+            <div class="qaction-title">Monitor Tasks</div>
+            <div class="qaction-desc">Live task queue and execution history</div>
+        </a>
+        <a href="{% url 'super_admin:payments' %}" class="qaction">
+            <div class="qaction-title">Payments</div>
+            <div class="qaction-desc">Transactions, wallets, and escrow balances</div>
+        </a>
+        <a href="{% url 'super_admin:disputes' %}" class="qaction">
+            <div class="qaction-title">Disputes</div>
+            <div class="qaction-desc">Open conflicts awaiting resolution</div>
+        </a>
+        <a href="{% url 'super_admin:analytics' %}" class="qaction">
+            <div class="qaction-title">Analytics</div>
+            <div class="qaction-desc">Platform metrics and performance trends</div>
+        </a>
+        <a href="{% url 'super_admin:reports' %}" class="qaction">
+            <div class="qaction-title">Reports</div>
+            <div class="qaction-desc">Daily, weekly, monthly, financial exports</div>
+        </a>
+        <a href="{% url 'super_admin:audit_logs' %}" class="qaction">
+            <div class="qaction-title">Audit Logs</div>
+            <div class="qaction-desc">Full administrative action history</div>
+        </a>
+        <a href="{% url 'super_admin:admin_users' %}" class="qaction">
+            <div class="qaction-title">Admin Users</div>
+            <div class="qaction-desc">Manage roles and platform access</div>
+        </a>
+        <a href="{% url 'super_admin:announcements' %}" class="qaction">
+            <div class="qaction-title">Announcements</div>
+            <div class="qaction-desc">Broadcast messages to users</div>
+        </a>
+        <a href="{% url 'super_admin:settings' %}" class="qaction">
+            <div class="qaction-title">Settings</div>
+            <div class="qaction-desc">Platform-wide configuration</div>
+        </a>
+        <a href="{% url 'super_admin:system_health' %}" class="qaction">
+            <div class="qaction-title">System Health</div>
+            <div class="qaction-desc">Database, cache, queue, worker status</div>
+        </a>
+        <a href="{% url 'super_admin:backup' %}" class="qaction">
+            <div class="qaction-title">Backup</div>
+            <div class="qaction-desc">Create, download, and restore backups</div>
+        </a>
+    </div>
+</div>
+
+<!-- ============ ACTIVITY CHARTS ============ -->
+<div class="grid-2-1">
+
+    <div class="card" style="margin-bottom:0;">
         <div class="card-header">
-            <h3 class="card-title">Quick Actions</h3>
+            <div class="card-title">Task Volume — Last 30 Days</div>
+            <a href="{% url 'super_admin:analytics' %}" class="section-action">Full Analytics</a>
         </div>
-        <div class="card-body" style="padding: 0;">
-            <div class="quick-actions">
-                <a href="{% url 'super_admin:agents' %}" class="action-card">
-                    <div class="action-icon">👥</div>
-                    <div class="action-title">Manage Agents</div>
-                    <div class="action-desc">View and manage all agents</div>
-                </a>
-                <a href="{% url 'super_admin:tasks' %}" class="action-card">
-                    <div class="action-icon">📋</div>
-                    <div class="action-title">View Tasks</div>
-                    <div class="action-desc">Monitor task execution</div>
-                </a>
-                <a href="{% url 'super_admin:payments' %}" class="action-card">
-                    <div class="action-icon">💰</div>
-                    <div class="action-title">Transactions</div>
-                    <div class="action-desc">View payment history</div>
-                </a>
-                <a href="{% url 'super_admin:settings' %}" class="action-card">
-                    <div class="action-icon">⚙️</div>
-                    <div class="action-title">System Settings</div>
-                    <div class="action-desc">Configure platform</div>
-                </a>
-                <a href="{% url 'super_admin:analytics' %}" class="action-card">
-                    <div class="action-icon">📊</div>
-                    <div class="action-title">Analytics</div>
-                    <div class="action-desc">View platform metrics</div>
-                </a>
-                <a href="{% url 'super_admin:admin_users' %}" class="action-card">
-                    <div class="action-icon">👥</div>
-                    <div class="action-title">Admin Users</div>
-                    <div class="action-desc">Manage administrators</div>
-                </a>
+        <div class="card-body" style="padding:0;">
+            <div class="chart-bars" id="taskVolumeChart">
+                {% for day in daily_stats %}
+                    <div class="bar" style="height: {{ day.bar_pct|default:5 }}%;" title="{{ day.date }} — {{ day.tasks }} tasks"></div>
+                {% empty %}
+                    {% for i in "123456789012345678901234567890" %}
+                        <div class="bar" style="height: {{ forloop.counter }}%;" title="No data"></div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div style="padding:12px 24px;border-top:1px solid #e5e0d3;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;">
+                <span>30 days ago</span>
+                <span>Today</span>
             </div>
         </div>
     </div>
+
+    <div class="card" style="margin-bottom:0;">
+        <div class="card-header">
+            <div class="card-title">Task States</div>
+        </div>
+        <div class="card-body">
+            {% for row in task_volume %}
+            <div class="hbar-row">
+                <div class="hbar-label">{{ row.state|title }}</div>
+                <div class="hbar-track">
+                    <div class="hbar-fill" style="width: {{ row.pct|default:0 }}%;"></div>
+                </div>
+                <div class="hbar-value">{{ row.count }}</div>
+            </div>
+            {% empty %}
+            <p style="text-align:center;color:#64748b;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:24px 0;">No task data</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ============ RECENT TABLES ============ -->
+<div class="grid-2">
 
     <!-- Recent Tasks -->
-    <div class="card">
+    <div class="card" style="margin-bottom:0;">
         <div class="card-header">
-            <h3 class="card-title">Recent Tasks</h3>
-            <a href="{% url 'super_admin:tasks' %}" class="btn btn-outline">View All</a>
+            <div class="card-title">Recent Tasks</div>
+            <a href="{% url 'super_admin:tasks' %}" class="section-action">View All</a>
         </div>
-        <div class="card-body" style="padding: 0;">
+        <div class="card-body" style="padding:0;">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Title</th>
                         <th>Budget</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th style="text-align: right;">Actions</th>
+                        <th>State</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for task in recent_tasks %}
                     <tr>
                         <td class="text-mono">{{ task.id|slice:":8" }}</td>
-                        <td class="font-medium">{{ task.title|truncatechars:50 }}</td>
-                        <td class="text-nowrap text-mono">{{ task.budget_sats|default:0 }} sats</td>
+                        <td class="font-medium">{{ task.title|truncatechars:40 }}</td>
+                        <td class="text-nowrap text-mono">{{ task.budget_sats|default:0 }}</td>
                         <td>
-                            {% if task.state == 'completed' %}
-                            <span class="badge badge-success">Completed</span>
-                            {% elif task.state == 'running' %}
-                            <span class="badge badge-info">Running</span>
-                            {% elif task.state == 'pending' %}
-                            <span class="badge badge-warning">Pending</span>
-                            {% elif task.state == 'failed' %}
-                            <span class="badge badge-danger">Failed</span>
-                            {% else %}
-                            <span class="badge badge-secondary">{{ task.state }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-nowrap text-mono">{{ task.created_at|timesince }} ago</td>
-                        <td style="text-align: right;">
-                            <a href="{% url 'super_admin:task_detail' task.id %}" class="btn btn-sm btn-outline">View</a>
+                            {% if task.state == 'completed' %}<span class="badge badge-success">Completed</span>
+                            {% elif task.state == 'executing' %}<span class="badge badge-info">Executing</span>
+                            {% elif task.state == 'assigned' %}<span class="badge badge-warning">Assigned</span>
+                            {% elif task.state == 'open' %}<span class="badge badge-secondary">Open</span>
+                            {% elif task.state == 'failed' %}<span class="badge badge-danger">Failed</span>
+                            {% elif task.state == 'cancelled' %}<span class="badge badge-danger">Cancelled</span>
+                            {% else %}<span class="badge badge-secondary">{{ task.state }}</span>{% endif %}
                         </td>
                     </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center">No tasks found</td>
-                    </tr>
+                    <tr><td colspan="4" class="text-center">No tasks found</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -568,114 +420,103 @@ label,
     </div>
 
     <!-- Recent Agents -->
-    <div class="card">
+    <div class="card" style="margin-bottom:0;">
         <div class="card-header">
-            <h3 class="card-title">Recent Agents</h3>
-            <a href="{% url 'super_admin:agents' %}" class="btn btn-outline">View All</a>
+            <div class="card-title">Recent Agents</div>
+            <a href="{% url 'super_admin:agents' %}" class="section-action">View All</a>
         </div>
-        <div class="card-body" style="padding: 0;">
+        <div class="card-body" style="padding:0;">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>Name</th>
                         <th>Type</th>
-                        <th>Trust Score</th>
+                        <th>Trust</th>
                         <th>Status</th>
-                        <th>Last Active</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for agent in recent_agents %}
                     <tr>
-                        <td class="font-medium">{{ agent.name }}</td>
+                        <td class="font-medium">{{ agent.name|truncatechars:30 }}</td>
                         <td>
-                            {% if agent.agent_type == 'ai' %}
-                            <span class="badge badge-info">AI Agent</span>
-                            {% else %}
-                            <span class="badge badge-secondary">Human Agent</span>
-                            {% endif %}
+                            {% if agent.agent_type == 'ai' %}<span class="badge badge-info">AI</span>
+                            {% else %}<span class="badge badge-secondary">Human</span>{% endif %}
                         </td>
                         <td>
                             <div class="progress-wrapper">
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: {{ agent.trust_score|floatformat:0|default:0 }}%"></div>
                                 </div>
-                                <span class="progress-label">{{ agent.trust_score|floatformat:1|default:0 }}%</span>
+                                <span class="progress-label">{{ agent.trust_score|floatformat:0|default:0 }}%</span>
                             </div>
                         </td>
                         <td>
-                            {% if agent.is_active %}
-                            <span class="badge badge-success">Active</span>
-                            {% else %}
-                            <span class="badge badge-danger">Inactive</span>
-                            {% endif %}
+                            {% if agent.is_active %}<span class="badge badge-success">Active</span>
+                            {% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
                         </td>
-                        <td class="text-nowrap text-mono">{{ agent.last_heartbeat|timesince|default:"Never" }} ago</td>
                     </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center">No agents found</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Recent Transactions -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Recent Transactions</h3>
-            <a href="{% url 'super_admin:payments' %}" class="btn btn-outline">View All</a>
-        </div>
-        <div class="card-body" style="padding: 0;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Amount</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tx in recent_transactions %}
-                    <tr>
-                        <td class="text-mono">{{ tx.id|slice:":8" }}</td>
-                        <td class="font-medium text-mono">{{ tx.amount_sats|default:0 }} sats</td>
-                        <td>
-                            {% if tx.type == 'deposit' %}
-                            <span class="badge badge-success">Deposit</span>
-                            {% elif tx.type == 'withdrawal' %}
-                            <span class="badge badge-warning">Withdrawal</span>
-                            {% elif tx.type == 'payment' %}
-                            <span class="badge badge-info">Payment</span>
-                            {% else %}
-                            <span class="badge badge-secondary">{{ tx.type }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if tx.status == 'completed' %}
-                            <span class="badge badge-success">Completed</span>
-                            {% elif tx.status == 'pending' %}
-                            <span class="badge badge-warning">Pending</span>
-                            {% elif tx.status == 'failed' %}
-                            <span class="badge badge-danger">Failed</span>
-                            {% else %}
-                            <span class="badge badge-secondary">{{ tx.status }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-nowrap text-mono">{{ tx.created_at|timesince }} ago</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center">No transactions found</td>
-                    </tr>
+                    <tr><td colspan="4" class="text-center">No agents found</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<!-- ============ RECENT TRANSACTIONS ============ -->
+<div class="card" style="margin-top:32px;margin-bottom:0;">
+    <div class="card-header">
+        <div class="card-title">Recent Transactions</div>
+        <a href="{% url 'super_admin:transactions' %}" class="section-action">View All</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Age</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in recent_transactions %}
+                <tr>
+                    <td class="text-mono">{{ tx.id|slice:":8" }}</td>
+                    <td class="text-mono text-nowrap">{{ tx.amount_sats|default:0 }} sats</td>
+                    <td>
+                        {% if tx.type == 'deposit' %}<span class="badge badge-success">Deposit</span>
+                        {% elif tx.type == 'withdrawal' %}<span class="badge badge-warning">Withdrawal</span>
+                        {% elif tx.type == 'payment' %}<span class="badge badge-info">Payment</span>
+                        {% elif tx.type == 'refund' %}<span class="badge badge-secondary">Refund</span>
+                        {% else %}<span class="badge badge-secondary">{{ tx.type|default:"—" }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if tx.status == 'completed' %}<span class="badge badge-success">Completed</span>
+                        {% elif tx.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                        {% elif tx.status == 'failed' %}<span class="badge badge-danger">Failed</span>
+                        {% elif tx.status == 'refunded' %}<span class="badge badge-secondary">Refunded</span>
+                        {% else %}<span class="badge badge-secondary">{{ tx.status|default:"—" }}</span>{% endif %}
+                    </td>
+                    <td class="text-mono">{% if tx.from_wallet %}{{ tx.from_wallet.id|slice:":8" }}{% else %}—{% endif %}</td>
+                    <td class="text-mono">{% if tx.to_wallet %}{{ tx.to_wallet.id|slice:":8" }}{% else %}—{% endif %}</td>
+                    <td class="text-mono text-nowrap">{{ tx.created_at|timesince }} ago</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'super_admin:transaction_detail' tx.id %}" class="btn btn-sm btn-outline">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center">No transactions found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% endblock %}
