@@ -1,0 +1,19 @@
+{# Generic edit-setting modal. Include with setting_key, setting_value, setting_type #}
+<div id="editSettingModal" style="display:none;position:fixed;inset:0;background:rgba(15,17,25,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fdfcf8;border:1px solid #c9c2b0;padding:28px;max-width:460px;width:90%;">
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:6px;font-family:'Source Serif 4',serif;color:#1a2b4a;">Edit Setting</h3>
+        <p id="editSettingKey" style="font-size:12px;color:#64748b;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;"></p>
+        <form method="post" action="" id="editSettingForm">
+            {% csrf_token %}
+            <input type="hidden" name="key" id="editSettingKeyField">
+            <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#1a2b4a;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;">Value</label>
+                <input type="text" name="value" id="editSettingValue" required style="width:100%;padding:10px 14px;font-size:14px;border:1px solid #c9c2b0;background:#fdfcf8;color:#1a2b4a;border-radius:0;">
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('editSettingModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
