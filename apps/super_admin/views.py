@@ -788,7 +788,7 @@ class DownloadReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementListView(View):
-    template_name = 'super_admin/announcements.html'
+    template_name = 'super_admin/announcements/announcements.html'
 
     def get(self, request):
         announcements = Announcement.objects.all().order_by('-created_at')
@@ -797,7 +797,7 @@ class AnnouncementListView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementCreateView(View):
-    template_name = 'super_admin/announcement_create.html'
+    template_name = 'super_admin/announcements/announcement_create.html'
 
     def get(self, request):
         return render(request, self.template_name)
@@ -815,7 +815,7 @@ class AnnouncementCreateView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementEditView(View):
-    template_name = 'super_admin/announcement_edit.html'
+    template_name = 'super_admin/announcements/announcement_edit.html'
 
     def get(self, request, announcement_id):
         announcement = get_object_or_404(Announcement, id=announcement_id)
@@ -860,7 +860,7 @@ class DisputeListView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class DisputeDetailView(View):
-    template_name = 'super_admin/dispute_detail.html'
+    template_name = 'super_admin/disputes/dispute_detail.html'
 
     def get(self, request, dispute_id):
         dispute = get_object_or_404(Dispute, id=dispute_id)
