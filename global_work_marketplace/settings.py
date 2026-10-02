@@ -18,15 +18,13 @@ SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-# Login URLs - Add these lines
+# Login URLs
 LOGIN_URL = '/django-admin/login/'
 LOGIN_REDIRECT_URL = '/super-admin/'
 LOGOUT_REDIRECT_URL = '/django-admin/login/'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().resolve().parent.parent
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-!htw56rs)q(s%_w6_x5e73ax+#w0#rofl6&9f10)h)vwh@gab+')
@@ -34,8 +32,6 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-!htw56rs)q(s%_w6_x5e7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-#ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
-#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 ALLOWED_HOSTS = [
     "global-work-marketplace.onrender.com",
     "127.0.0.1",
@@ -52,14 +48,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.postgres',  # <-- ADDED THIS for ArrayField support
-    
+    'django.contrib.postgres',
+
     # Third party apps
     'django_filters',
     'rest_framework',
     'corsheaders',
     'channels',
-    
+    'social_django',
+
     # Your custom apps
     'apps.common.apps.CommonConfig',
     'apps.accounts.apps.AccountsConfig',
@@ -85,9 +82,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
-#ROOT_URLCONF = 'config.urls'
 ROOT_URLCONF = 'global_work_marketplace.urls'
 
 TEMPLATES = [
@@ -104,6 +101,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -113,10 +112,6 @@ WSGI_APPLICATION = 'global_work_marketplace.wsgi.application'
 ASGI_APPLICATION = "global_work_marketplace.asgi.application"
 
 # Database - Using SQLite (Simple, no PostgreSQL needed)
-# Note: SQLite doesn't support ArrayField. For production, switch to PostgreSQL.
-# For development with SQLite, ArrayFields will be treated as JSONField.
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -128,8 +123,6 @@ DATABASES = {
 AUTH_USER_MODEL = 'accounts.User'
 
 # Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -146,30 +139,23 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
+# Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files (User uploads)
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # REST Framework Settings
@@ -191,17 +177,17 @@ REST_FRAMEWORK = {
 }
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # Channel Layers (for WebSockets)
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Use Redis in production
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
 
-# Cache Settings (Using local memory cache for simplicity)
+# Cache Settings
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -209,15 +195,15 @@ CACHES = {
     }
 }
 
-# Celery Settings (Optional - for background tasks)
-CELERY_BROKER_URL = 'memory://'  # Simple in-memory broker for development
+# Celery Settings
+CELERY_BROKER_URL = 'memory://'
 CELERY_RESULT_BACKEND = 'cache'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# Email Settings (Console backend for development)
+# Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -276,24 +262,24 @@ if not LOGS_DIR.exists():
 # Marketplace Specific Settings
 
 # Agent Settings
-AGENT_HEARTBEAT_TIMEOUT = 300  # 5 minutes
+AGENT_HEARTBEAT_TIMEOUT = 300
 AGENT_MAX_CONCURRENT_TASKS = 5
 AGENT_MIN_TRUST_SCORE = 0.3
 
 # Task Settings
-TASK_DEFAULT_TIMEOUT = 3600  # 1 hour
-TASK_MAX_BUDGET_SATS = 100000000  # 100 million sats max
-TASK_MIN_BUDGET_SATS = 1  # Minimum 1 sat
+TASK_DEFAULT_TIMEOUT = 3600
+TASK_MAX_BUDGET_SATS = 100000000
+TASK_MIN_BUDGET_SATS = 1
 
 # Payment Settings
-PLATFORM_FEE_PERCENT = 2.5  # 2.5% platform fee
+PLATFORM_FEE_PERCENT = 2.5
 MIN_DEPOSIT_SATS = 1000
 ESCROW_TIMEOUT_HOURS = 48
 
 # Security Settings
 MAX_LOGIN_ATTEMPTS = 5
 SESSION_TIMEOUT_MINUTES = 60
-REQUIRE_EMAIL_VERIFICATION = False  # Set to True in production
+REQUIRE_EMAIL_VERIFICATION = False
 
 # Rate Limiting
 RATELIMIT_ENABLED = True
@@ -313,12 +299,12 @@ ENABLE_HUMAN_AGENTS = True
 ENABLE_BATCH_TASKS = True
 ENABLE_STREAMING_EXECUTION = True
 
-# OpenAI Settings (for AI agents)
+# OpenAI Settings
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 OPENAI_MODEL = 'gpt-4-turbo-preview'
 
-# Lightning Network Settings (for Bitcoin payments)
-LIGHTNING_ENABLED = False  # Set to True when ready
+# Lightning Network Settings
+LIGHTNING_ENABLED = False
 LIGHTNING_RPC_HOST = os.environ.get('LIGHTNING_RPC_HOST', 'localhost:10009')
 LIGHTNING_MACAROON_PATH = os.environ.get('LIGHTNING_MACAROON_PATH', '')
 LIGHTNING_TLS_PATH = os.environ.get('LIGHTNING_TLS_PATH', '')
@@ -330,3 +316,28 @@ SUPER_ADMIN_SHOW_SENSITIVE_DATA = True
 # Audit Logging
 ENABLE_AUDIT_LOGS = True
 AUDIT_LOG_RETENTION_DAYS = 90
+
+# ==================== GOOGLE OAUTH ====================
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '')
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/accounts/dashboard/'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/accounts/login/'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/accounts/dashboard/'
+SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/accounts/dashboard/'
+SOCIAL_AUTH_DISCONNECT_REDIRECT_URL = '/accounts/login/'
+
+# Prevent social-auth from clashing with your custom User model's required fields.
+# If your accounts.User requires `username`, these tell social-auth what to do.
+SOCIAL_AUTH_USER_FIELDS = ['email', 'username', 'first_name', 'last_name']
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+
+# Tell social-auth to use your custom User model (this is automatic via AUTH_USER_MODEL,
+# but these settings make the pipeline behave)
+SOCIAL_AUTH_USER_MODEL = 'accounts.User'
