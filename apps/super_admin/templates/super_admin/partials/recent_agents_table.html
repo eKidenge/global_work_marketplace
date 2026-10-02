@@ -1,0 +1,25 @@
+{% if recent_agents %}
+<table class="data-table">
+    <thead>
+        <tr><th>Name</th><th>Type</th><th>Status</th><th>Last Heartbeat</th></tr>
+    </thead>
+    <tbody>
+        {% for agent in recent_agents %}
+        <tr>
+            <td class="font-medium">{{ agent.name }}</td>
+            <td>
+                {% if agent.agent_type == 'ai' %}<span class="badge badge-info">AI</span>
+                {% else %}<span class="badge badge-secondary">Human</span>{% endif %}
+            </td>
+            <td>
+                {% if agent.is_active %}<span class="badge badge-success">Active</span>
+                {% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
+            </td>
+            <td class="text-mono">{% if agent.last_heartbeat %}{{ agent.last_heartbeat|timesince }} ago{% else %}Never{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-center">No agents found.</p>
+{% endif %}
