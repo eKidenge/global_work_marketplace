@@ -1,5 +1,6 @@
 # apps/super_admin/views.py
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.decorators import method_decorator
@@ -28,40 +29,39 @@ from apps.verification.models import Verification, Dispute
 class SuperAdminLogin(View):
     """Super Admin login view"""
     template_name = 'super_admin/login.html'
-    
+
     def get(self, request):
         if request.user.is_authenticated and request.user.is_staff:
             return redirect('super_admin:dashboard')
         return render(request, self.template_name)
-    
+
     def post(self, request):
         email = request.POST.get('email')
         password = request.POST.get('password')
-        
+
         user = authenticate(request, username=email, password=password)
-        
+
         if user and user.is_staff:
             login(request, user)
-            
-            # Log admin login
+
             AdminAuditLog.objects.create(
                 admin_user=AdminUser.objects.filter(user=user).first(),
                 action_type='login',
                 resource_type='auth',
                 resource_id=str(user.id),
-                ip_address=request.META.get('REMOTE_ADDR'),
+                ip_address=request.META.get('REMOTE_ADDR') or '0.0.0.0',
                 user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]
             )
-            
+
             return redirect('super_admin:dashboard')
-        
+
         messages.error(request, 'Invalid credentials or insufficient permissions')
         return render(request, self.template_name)
 
 
 class SuperAdminLogout(View):
     """Super Admin logout view"""
-    
+
     def get(self, request):
         logout(request)
         return redirect('super_admin:login')
@@ -73,15 +73,15 @@ class SuperAdminLogout(View):
 class SuperAdminDashboard(View):
     """Main dashboard view"""
     template_name = 'super_admin/dashboard.html'
-    
+
     def get(self, request):
         context = self.get_context_data()
         return render(request, self.template_name, context)
-    
+
     def get_context_data(self):
         now = timezone.now()
         today_start = now.replace(hour=0, minute=0, second=0)
-        
+
         context = {
             'stats': {
                 'total_agents': Agent.objects.count(),
@@ -101,29 +101,29 @@ class SuperAdminDashboard(View):
             'system_alerts': self.get_system_alerts(),
         }
         return context
-    
+
     def calculate_success_rate(self):
         completed = Task.objects.filter(state='completed').count()
         total = Task.objects.exclude(state__in=['open']).count()
         return (completed / total * 100) if total > 0 else 0
-    
+
     def get_system_alerts(self):
         alerts = []
         now = timezone.now()
-        
+
         stuck_tasks = Task.objects.filter(state='executing', started_at__lt=now - timedelta(minutes=30)).count()
         if stuck_tasks > 0:
             alerts.append({'type': 'warning', 'message': f'{stuck_tasks} tasks stuck in executing state'})
-        
+
         total_agents = Agent.objects.count()
         online_agents = Agent.objects.filter(last_heartbeat__gte=now - timedelta(minutes=5)).count()
         if total_agents > 0 and (online_agents / total_agents * 100) < 20:
             alerts.append({'type': 'critical', 'message': f'Only {int(online_agents/total_agents*100)}% of agents are online'})
-        
+
         pending_disputes = Dispute.objects.filter(status='open').count()
         if pending_disputes > 0:
             alerts.append({'type': 'warning', 'message': f'{pending_disputes} disputes awaiting resolution'})
-        
+
         return alerts
 
 
@@ -132,7 +132,7 @@ class SuperAdminDashboard(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AgentManagement(View):
     template_name = 'super_admin/agents.html'
-    
+
     def get(self, request):
         agents = Agent.objects.select_related('user').all()
         context = {
@@ -149,11 +149,11 @@ class AgentManagement(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AgentDetailView(View):
     template_name = 'super_admin/agent_detail.html'
-    
+
     def get(self, request, agent_id):
         agent = get_object_or_404(Agent, id=agent_id)
         tasks = Task.objects.filter(matched_agent=agent).order_by('-created_at')[:20]
-        
+
         context = {
             'agent': agent,
             'tasks': tasks,
@@ -194,39 +194,38 @@ class AgentDeleteView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AgentCreateView(View):
     template_name = 'super_admin/agent_create.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
-    
+
     def post(self, request):
         name = request.POST.get('name')
         agent_type = request.POST.get('agent_type')
         email = request.POST.get('email')
-        
-        # Create user if doesn't exist
+
         user, created = User.objects.get_or_create(
             email=email,
             defaults={'username': email, 'is_staff': False}
         )
-        
+
         agent = Agent.objects.create(
             name=name,
             agent_type=agent_type,
             user=user,
             is_active=True
         )
-        
+
         return redirect('super_admin:agent_detail', agent_id=agent.id)
 
 
 @method_decorator(staff_member_required, name='dispatch')
 class AgentEditView(View):
     template_name = 'super_admin/agent_edit.html'
-    
+
     def get(self, request, agent_id):
         agent = get_object_or_404(Agent, id=agent_id)
         return render(request, self.template_name, {'agent': agent})
-    
+
     def post(self, request, agent_id):
         agent = get_object_or_404(Agent, id=agent_id)
         agent.name = request.POST.get('name')
@@ -241,9 +240,10 @@ class AgentEditView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class TaskManagement(View):
     template_name = 'super_admin/tasks.html'
-    
+
     def get(self, request):
-        tasks = Task.objects.select_related('matched_agent', 'created_by').all().order_by('-created_at')
+        # `created_by` isn't a field on Task — only `matched_agent` is selectable here.
+        tasks = Task.objects.select_related('matched_agent').all().order_by('-created_at')
         context = {
             'tasks': tasks[:100],
             'total_tasks': tasks.count(),
@@ -258,11 +258,11 @@ class TaskManagement(View):
 @method_decorator(staff_member_required, name='dispatch')
 class TaskDetailView(View):
     template_name = 'super_admin/task_detail.html'
-    
+
     def get(self, request, task_id):
         task = get_object_or_404(Task, id=task_id)
         execution = Execution.objects.filter(task=task).first()
-        
+
         context = {
             'task': task,
             'execution': execution,
@@ -313,11 +313,11 @@ class TaskForceFailView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class PaymentManagement(View):
     template_name = 'super_admin/payments.html'
-    
+
     def get(self, request):
         transactions = Transaction.objects.select_related('from_wallet', 'to_wallet').order_by('-created_at')[:100]
         wallets = Wallet.objects.all()
-        
+
         context = {
             'transactions': transactions,
             'wallets': wallets,
@@ -331,19 +331,18 @@ class PaymentManagement(View):
 @method_decorator(staff_member_required, name='dispatch')
 class TransactionListView(View):
     template_name = 'super_admin/transactions.html'
-    
+
     def get(self, request):
         transactions = Transaction.objects.select_related('from_wallet', 'to_wallet').order_by('-created_at')
-        
-        # Filtering
+
         status = request.GET.get('status')
         if status:
             transactions = transactions.filter(status=status)
-        
+
         tx_type = request.GET.get('type')
         if tx_type:
             transactions = transactions.filter(type=tx_type)
-        
+
         context = {
             'transactions': transactions[:200],
             'total_volume': transactions.aggregate(Sum('amount_sats'))['amount_sats__sum'] or 0,
@@ -356,7 +355,7 @@ class TransactionListView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class TransactionDetailView(View):
     template_name = 'super_admin/transaction_detail.html'
-    
+
     def get(self, request, transaction_id):
         transaction = get_object_or_404(Transaction, id=transaction_id)
         return render(request, self.template_name, {'transaction': transaction})
@@ -368,8 +367,7 @@ class TransactionRefundView(View):
         transaction = get_object_or_404(Transaction, id=transaction_id)
         transaction.status = 'refunded'
         transaction.save()
-        
-        # Create reverse transaction
+
         Transaction.objects.create(
             from_wallet=transaction.to_wallet,
             to_wallet=transaction.from_wallet,
@@ -377,14 +375,14 @@ class TransactionRefundView(View):
             type='refund',
             status='completed'
         )
-        
+
         return JsonResponse({'success': True, 'message': 'Transaction refunded'})
 
 
 @method_decorator(staff_member_required, name='dispatch')
 class WalletListView(View):
     template_name = 'super_admin/wallets.html'
-    
+
     def get(self, request):
         wallets = Wallet.objects.all()
         context = {
@@ -397,13 +395,13 @@ class WalletListView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class WalletDetailView(View):
     template_name = 'super_admin/wallet_detail.html'
-    
+
     def get(self, request, wallet_id):
         wallet = get_object_or_404(Wallet, id=wallet_id)
         transactions = Transaction.objects.filter(
             Q(from_wallet=wallet) | Q(to_wallet=wallet)
         ).order_by('-created_at')[:50]
-        
+
         context = {
             'wallet': wallet,
             'transactions': transactions,
@@ -414,7 +412,7 @@ class WalletDetailView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class EscrowListView(View):
     template_name = 'super_admin/escrow_list.html'
-    
+
     def get(self, request):
         escrows = EscrowContract.objects.select_related('task', 'buyer', 'seller').all()
         context = {
@@ -427,7 +425,7 @@ class EscrowListView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class EscrowDetailView(View):
     template_name = 'super_admin/escrow_detail.html'
-    
+
     def get(self, request, escrow_id):
         escrow = get_object_or_404(EscrowContract, id=escrow_id)
         return render(request, self.template_name, {'escrow': escrow})
@@ -442,7 +440,6 @@ class EscrowReleaseView(View):
         escrow.save()
         return JsonResponse({'success': True, 'message': 'Escrow released'})
 
-# Add this class after EscrowReleaseView and before SystemSettingsView
 
 @method_decorator(staff_member_required, name='dispatch')
 class EscrowDisputeView(View):
@@ -453,16 +450,17 @@ class EscrowDisputeView(View):
         escrow.save()
         return JsonResponse({'success': True, 'message': 'Dispute raised on escrow'})
 
+
 # ==================== SETTINGS VIEWS ====================
 
 @method_decorator(staff_member_required, name='dispatch')
 class SystemSettingsView(View):
     template_name = 'super_admin/settings.html'
-    
+
     def get(self, request):
-        settings = SystemSettings.objects.all()
+        settings_qs = SystemSettings.objects.all()
         context = {
-            'settings': settings,
+            'settings': settings_qs,
             'setting_categories': {
                 'general': SystemSettings.objects.filter(key__startswith='general_'),
                 'payments': SystemSettings.objects.filter(key__startswith='payment_'),
@@ -477,7 +475,7 @@ class SystemSettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class GeneralSettingsView(View):
     template_name = 'super_admin/general_settings.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -485,7 +483,7 @@ class GeneralSettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class PaymentSettingsView(View):
     template_name = 'super_admin/payment_settings.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -493,7 +491,7 @@ class PaymentSettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AgentSettingsView(View):
     template_name = 'super_admin/agent_settings.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -501,7 +499,7 @@ class AgentSettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class TaskSettingsView(View):
     template_name = 'super_admin/task_settings.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -509,7 +507,7 @@ class TaskSettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class SecuritySettingsView(View):
     template_name = 'super_admin/security_settings.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -517,7 +515,7 @@ class SecuritySettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class EmailSettingsView(View):
     template_name = 'super_admin/email_settings.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -525,10 +523,15 @@ class EmailSettingsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class SettingUpdateView(View):
     def post(self, request, key):
-        value = request.POST.get('value')
+        raw = request.POST.get('value', '')
+        try:
+            parsed = json.loads(raw) if raw else {}
+        except (ValueError, TypeError):
+            parsed = raw
+
         setting, created = SystemSettings.objects.update_or_create(
             key=key,
-            defaults={'value': json.loads(value) if value else {}}
+            defaults={'value': parsed}
         )
         return JsonResponse({'success': True})
 
@@ -538,7 +541,7 @@ class SettingUpdateView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AnalyticsView(View):
     template_name = 'super_admin/analytics.html'
-    
+
     def get(self, request):
         context = {
             'daily_stats': self.get_daily_stats(),
@@ -547,27 +550,27 @@ class AnalyticsView(View):
             'revenue_stats': self.get_revenue_stats(),
         }
         return render(request, self.template_name, context)
-    
+
     def get_daily_stats(self):
         stats = []
         for i in range(30, -1, -1):
             date = timezone.now() - timedelta(days=i)
             day_start = date.replace(hour=0, minute=0, second=0)
             day_end = day_start + timedelta(days=1)
-            
+
             stats.append({
                 'date': date.strftime('%Y-%m-%d'),
                 'tasks': Task.objects.filter(created_at__range=[day_start, day_end]).count(),
                 'volume': Transaction.objects.filter(created_at__range=[day_start, day_end], status='completed').aggregate(Sum('amount_sats'))['amount_sats__sum'] or 0,
             })
         return stats
-    
+
     def get_agent_performance(self):
         return Agent.objects.filter(total_tasks__gt=0).order_by('-success_rate')[:20]
-    
+
     def get_task_volume(self):
         return Task.objects.values('state').annotate(count=Count('id'))
-    
+
     def get_revenue_stats(self):
         return Transaction.objects.filter(status='completed').values('type').annotate(total=Sum('amount_sats'))
 
@@ -575,7 +578,7 @@ class AnalyticsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class MetricsView(View):
     template_name = 'super_admin/metrics.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -583,7 +586,7 @@ class MetricsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class ReportsView(View):
     template_name = 'super_admin/reports.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -591,7 +594,7 @@ class ReportsView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AlertsView(View):
     template_name = 'super_admin/alerts.html'
-    
+
     def get(self, request):
         from apps.analytics.models import Alert
         alerts = Alert.objects.all().order_by('-created_at')
@@ -614,14 +617,14 @@ class ExportReportView(View):
     def get(self, request, report_type):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{report_type}_report.csv"'
-        
+
         writer = csv.writer(response)
-        
+
         if report_type == 'tasks':
             writer.writerow(['Task ID', 'Title', 'Budget', 'State', 'Created At', 'Completed At'])
             for task in Task.objects.all():
                 writer.writerow([str(task.id), task.title, task.budget_sats, task.state, task.created_at, task.completed_at])
-        
+
         return response
 
 
@@ -630,7 +633,7 @@ class ExportReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AdminUserManagement(View):
     template_name = 'super_admin/admin_users.html'
-    
+
     def get(self, request):
         admin_users = AdminUser.objects.select_related('user').all()
         context = {
@@ -646,10 +649,10 @@ class AdminUserCreateView(View):
         email = request.POST.get('email')
         password = request.POST.get('password')
         role = request.POST.get('role')
-        
+
         user = User.objects.create_user(username=email, email=email, password=password, is_staff=True)
         AdminUser.objects.create(user=user, role=role)
-        
+
         return JsonResponse({'success': True})
 
 
@@ -685,7 +688,7 @@ class AdminUserRoleUpdateView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AuditLogView(View):
     template_name = 'super_admin/audit_logs.html'
-    
+
     def get(self, request):
         logs = AdminAuditLog.objects.select_related('admin_user').order_by('-created_at')[:200]
         return render(request, self.template_name, {'logs': logs})
@@ -694,7 +697,7 @@ class AuditLogView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AuditLogDetailView(View):
     template_name = 'super_admin/audit_log_detail.html'
-    
+
     def get(self, request, log_id):
         log = get_object_or_404(AdminAuditLog, id=log_id)
         return render(request, self.template_name, {'log': log})
@@ -705,14 +708,14 @@ class AuditLogExportView(View):
     def get(self, request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="audit_logs.csv"'
-        
+
         writer = csv.writer(response)
         writer.writerow(['Timestamp', 'Admin', 'Action', 'Resource', 'Resource ID', 'IP Address'])
-        
+
         for log in AdminAuditLog.objects.all():
-            writer.writerow([log.created_at, log.admin_user.user.email if log.admin_user else 'System', 
+            writer.writerow([log.created_at, log.admin_user.user.email if log.admin_user else 'System',
                            log.action_type, log.resource_type, log.resource_id, log.ip_address])
-        
+
         return response
 
 
@@ -721,7 +724,7 @@ class AuditLogExportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class DailyReportView(View):
     template_name = 'super_admin/daily_report.html'
-    
+
     def get(self, request):
         date = request.GET.get('date', timezone.now().date())
         return render(request, self.template_name, {'date': date})
@@ -730,7 +733,7 @@ class DailyReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class WeeklyReportView(View):
     template_name = 'super_admin/weekly_report.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -738,7 +741,7 @@ class WeeklyReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class MonthlyReportView(View):
     template_name = 'super_admin/monthly_report.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -746,20 +749,20 @@ class MonthlyReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AgentReportView(View):
     template_name = 'super_admin/agent_report.html'
-    
+
     def get(self, request):
         agents = Agent.objects.annotate(
             task_count=Count('task'),
             success_count=Count('task', filter=Q(task__state='completed'))
         ).order_by('-task_count')
-        
+
         return render(request, self.template_name, {'agents': agents[:50]})
 
 
 @method_decorator(staff_member_required, name='dispatch')
 class FinancialReportView(View):
     template_name = 'super_admin/financial_report.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -767,7 +770,7 @@ class FinancialReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class TaskReportView(View):
     template_name = 'super_admin/task_report.html'
-    
+
     def get(self, request):
         tasks = Task.objects.values('state').annotate(count=Count('id'))
         return render(request, self.template_name, {'tasks': tasks})
@@ -776,7 +779,6 @@ class TaskReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class DownloadReportView(View):
     def get(self, request, report_id):
-        # Generate and download report
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="report_{report_id}.pdf"'
         return response
@@ -787,7 +789,7 @@ class DownloadReportView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementListView(View):
     template_name = 'super_admin/announcements.html'
-    
+
     def get(self, request):
         announcements = Announcement.objects.all().order_by('-created_at')
         return render(request, self.template_name, {'announcements': announcements})
@@ -796,10 +798,10 @@ class AnnouncementListView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementCreateView(View):
     template_name = 'super_admin/announcement_create.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
-    
+
     def post(self, request):
         announcement = Announcement.objects.create(
             title=request.POST.get('title'),
@@ -814,11 +816,11 @@ class AnnouncementCreateView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementEditView(View):
     template_name = 'super_admin/announcement_edit.html'
-    
+
     def get(self, request, announcement_id):
         announcement = get_object_or_404(Announcement, id=announcement_id)
         return render(request, self.template_name, {'announcement': announcement})
-    
+
     def post(self, request, announcement_id):
         announcement = get_object_or_404(Announcement, id=announcement_id)
         announcement.title = request.POST.get('title')
@@ -850,7 +852,7 @@ class AnnouncementToggleView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class DisputeListView(View):
     template_name = 'super_admin/disputes.html'
-    
+
     def get(self, request):
         disputes = Dispute.objects.select_related('task', 'raised_by').all().order_by('-created_at')
         return render(request, self.template_name, {'disputes': disputes})
@@ -859,7 +861,7 @@ class DisputeListView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class DisputeDetailView(View):
     template_name = 'super_admin/dispute_detail.html'
-    
+
     def get(self, request, dispute_id):
         dispute = get_object_or_404(Dispute, id=dispute_id)
         return render(request, self.template_name, {'dispute': dispute})
@@ -890,7 +892,7 @@ class DisputeEscalateView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class SystemHealthView(View):
     template_name = 'super_admin/system_health.html'
-    
+
     def get(self, request):
         context = {
             'database_status': self.check_database(),
@@ -899,20 +901,20 @@ class SystemHealthView(View):
             'worker_status': self.check_workers(),
         }
         return render(request, self.template_name, context)
-    
+
     def check_database(self):
         try:
             Task.objects.exists()
             return {'status': 'healthy', 'message': 'Database connected'}
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
-    
+
     def check_cache(self):
         return {'status': 'healthy', 'message': 'Cache working'}
-    
+
     def check_queue(self):
         return {'status': 'healthy', 'message': 'Queue working'}
-    
+
     def check_workers(self):
         return {'status': 'healthy', 'message': 'Workers active'}
 
@@ -939,7 +941,7 @@ class SystemStatusView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class BackupView(View):
     template_name = 'super_admin/backup.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -947,7 +949,6 @@ class BackupView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class CreateBackupView(View):
     def post(self, request):
-        # Implement backup logic
         return JsonResponse({'success': True, 'message': 'Backup created'})
 
 
@@ -962,7 +963,6 @@ class DownloadBackupView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class RestoreBackupView(View):
     def post(self, request, backup_file):
-        # Implement restore logic
         return JsonResponse({'success': True})
 
 
@@ -971,7 +971,7 @@ class RestoreBackupView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class APIKeyListView(View):
     template_name = 'super_admin/api_keys.html'
-    
+
     def get(self, request):
         from apps.accounts.models import APIKey
         api_keys = APIKey.objects.select_related('user').all()
@@ -983,7 +983,7 @@ class APIKeyCreateView(View):
     def post(self, request):
         from apps.accounts.models import APIKey
         from django.utils.crypto import get_random_string
-        
+
         api_key = APIKey.objects.create(
             user_id=request.POST.get('user_id'),
             name=request.POST.get('name'),
@@ -1006,7 +1006,7 @@ class APIKeyRevokeView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class WebhookListView(View):
     template_name = 'super_admin/webhooks.html'
-    
+
     def get(self, request):
         from apps.webhooks.models import WebhookEndpoint
         endpoints = WebhookEndpoint.objects.all()
@@ -1017,7 +1017,7 @@ class WebhookListView(View):
 class WebhookCreateView(View):
     def post(self, request):
         from apps.webhooks.models import WebhookEndpoint
-        
+
         endpoint = WebhookEndpoint.objects.create(
             url=request.POST.get('url'),
             secret=request.POST.get('secret'),
@@ -1053,15 +1053,15 @@ class WebhookTestView(View):
     def post(self, request, webhook_id):
         from apps.webhooks.models import WebhookEndpoint
         import requests
-        
+
         endpoint = get_object_or_404(WebhookEndpoint, id=webhook_id)
-        
+
         try:
             response = requests.post(endpoint.url, json={'test': True}, timeout=5)
             success = response.status_code == 200
         except Exception as e:
             success = False
-        
+
         return JsonResponse({'success': success})
 
 
@@ -1070,7 +1070,7 @@ class WebhookTestView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class NotificationListView(View):
     template_name = 'super_admin/notifications.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
 
@@ -1086,7 +1086,7 @@ class MarkNotificationsReadView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AdminProfileView(View):
     template_name = 'super_admin/profile.html'
-    
+
     def get(self, request):
         return render(request, self.template_name, {'user': request.user})
 
@@ -1094,10 +1094,10 @@ class AdminProfileView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AdminProfileEditView(View):
     template_name = 'super_admin/profile_edit.html'
-    
+
     def get(self, request):
         return render(request, self.template_name, {'user': request.user})
-    
+
     def post(self, request):
         user = request.user
         user.first_name = request.POST.get('first_name')
@@ -1110,10 +1110,10 @@ class AdminProfileEditView(View):
 @method_decorator(staff_member_required, name='dispatch')
 class AdminChangePasswordView(View):
     template_name = 'super_admin/change_password.html'
-    
+
     def get(self, request):
         return render(request, self.template_name)
-    
+
     def post(self, request):
         user = request.user
         if user.check_password(request.POST.get('current_password')):
