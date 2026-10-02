@@ -731,7 +731,7 @@ class DailyReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class WeeklyReportView(View):
-    template_name = 'super_admin/weekly_report.html'
+    template_name = 'super_admin/reports/weekly_report.html'
 
     def get(self, request):
         return render(request, self.template_name)
@@ -739,7 +739,7 @@ class WeeklyReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class MonthlyReportView(View):
-    template_name = 'super_admin/monthly_report.html'
+    template_name = 'super_admin/reports/monthly_report.html'
 
     def get(self, request):
         return render(request, self.template_name)
@@ -747,7 +747,7 @@ class MonthlyReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AgentReportView(View):
-    template_name = 'super_admin/agent_report.html'
+    template_name = 'super_admin/reports/agent_report.html'
 
     def get(self, request):
         agents = Agent.objects.annotate(
@@ -760,7 +760,7 @@ class AgentReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class FinancialReportView(View):
-    template_name = 'super_admin/financial_report.html'
+    template_name = 'super_admin/reports/financial_report.html'
 
     def get(self, request):
         return render(request, self.template_name)
@@ -768,7 +768,7 @@ class FinancialReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class TaskReportView(View):
-    template_name = 'super_admin/task_report.html'
+    template_name = 'super_admin/reports/task_report.html'
 
     def get(self, request):
         tasks = Task.objects.values('state').annotate(count=Count('id'))
