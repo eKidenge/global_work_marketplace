@@ -843,6 +843,7 @@
         font-weight: 500;
         cursor: pointer;
         transition: all var(--transition-base);
+        text-decoration: none;
     }
     
     .social-btn:hover {
@@ -1295,10 +1296,10 @@
                 </div>
                 
                 <div class="social-login">
-                    <button type="button" class="social-btn" onclick="socialLogin('google')">
+                    <a href="{% url 'social:begin' 'google-oauth2' %}" class="social-btn">
                         <span class="social-icon">G</span>
                         <span>Sign in with Google</span>
-                    </button>
+                    </a>
                     <button type="button" class="social-btn" onclick="socialLogin('github')">
                         <span class="social-icon">GH</span>
                         <span>Sign in with GitHub</span>
@@ -1502,7 +1503,7 @@
         
         // Social Login
         window.socialLogin = function(provider) {
-            window.location.href = `/accounts/social/${provider}/`;
+            window.location.href = `/accounts/social/login/${provider}/`;
         };
         
         // Add Security Headers
