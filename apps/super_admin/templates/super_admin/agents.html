@@ -158,7 +158,6 @@ input:focus, select:focus, textarea:focus {
             <option value="">All Status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
-            <option value="online">Online</option>
         </select>
         <a href="{% url 'super_admin:agent_create' %}" class="btn btn-primary">
             <span>＋</span><span>New Agent</span>
@@ -192,8 +191,7 @@ input:focus, select:focus, textarea:focus {
                 <tr data-name="{{ agent.name|lower }}"
                     data-email="{{ agent.user.email|lower|default:'' }}"
                     data-type="{{ agent.agent_type }}"
-                    data-active="{% if agent.is_active %}1{% else %}0{% endif %}"
-                    data-online="{% if agent.last_heartbeat and agent.last_heartbeat > now_minus_5 %}1{% else %}0{% endif %}">
+                    data-active="{% if agent.is_active %}1{% else %}0{% endif %}">
 
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
@@ -303,7 +301,6 @@ input:focus, select:focus, textarea:focus {
             let matchesStatus = true;
             if (status === 'active')   matchesStatus = row.dataset.active === '1';
             if (status === 'inactive') matchesStatus = row.dataset.active === '0';
-            if (status === 'online')   matchesStatus = row.dataset.online === '1';
 
             if (matchesSearch && matchesType && matchesStatus) {
                 row.style.display = '';
