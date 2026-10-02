@@ -1,0 +1,16 @@
+<div style="padding: 24px;">
+    <div style="margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #1a2b4a; font-weight: 600;">Task Volume by State</div>
+    {% for row in task_volume %}
+    <div style="margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px;">
+            <span style="color: #1a2b4a; font-weight: 600;">{{ row.state|title }}</span>
+            <span style="color: #64748b;">{{ row.count }}</span>
+        </div>
+        <div style="height: 8px; background: #e5e0d3; border: 1px solid #c9c2b0;">
+            <div style="height: 100%; background: #b8944d; width: {{ row.count }}%;"></div>
+        </div>
+    </div>
+    {% empty %}
+    <p style="text-align: center; color: #64748b; font-size: 13px; padding: 24px 0;">No task data.</p>
+    {% endfor %}
+</div>
