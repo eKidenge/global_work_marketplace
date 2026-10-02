@@ -1,0 +1,11 @@
+{# Usage: {% include 'super_admin/partials/stats_cards.html' with stats=stats %} #}
+<div class="stats-grid">
+    {% for card in stats %}
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">{{ card.title }}</span></div>
+        <div class="stat-value">{{ card.value }}</div>
+        {% if card.label %}<div class="stat-label">{{ card.label }}</div>{% endif %}
+        {% if card.change %}<div class="stat-change {% if card.change_positive %}positive{% else %}negative{% endif %}">{{ card.change }}</div>{% endif %}
+    </div>
+    {% endfor %}
+</div>
