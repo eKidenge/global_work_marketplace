@@ -1,6 +1,136 @@
 {% extends 'super_admin/base.html' %}
+{% load static %}
 
 {% block title %}Admin Users{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* Override base font stack with government-style serif + mono */
+body,
+.sidebar,
+.top-bar,
+.card,
+.data-table,
+.btn,
+input,
+select {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+}
+
+.data-table th,
+.stat-title,
+.nav-section-title,
+label,
+.badge,
+.btn {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    letter-spacing: 0.3px;
+}
+
+.stat-value,
+.page-title h1,
+.card-title {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+    font-weight: 700;
+}
+
+/* Government document accents */
+.card {
+    border: 1px solid #c9c2b0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.stat-card {
+    border: 1px solid #c9c2b0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.stat-card::before {
+    background: #1a2b4a;
+    height: 4px;
+}
+
+.data-table th {
+    background: #1a2b4a;
+    color: #f5f1e8;
+    border-bottom: 2px solid #b8944d;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+.data-table td {
+    border-bottom: 1px solid #e5e0d3;
+    font-size: 14px;
+}
+
+.data-table tr:hover {
+    background: #faf8f3;
+}
+
+.badge {
+    border-radius: 0;
+    border: 1px solid currentColor;
+    padding: 3px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.btn {
+    border-radius: 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: #1a2b4a;
+    color: #f5f1e8;
+    border-color: #1a2b4a;
+}
+
+.btn-primary:hover {
+    background: #0f1c33;
+}
+
+.btn-outline {
+    background: #faf8f3;
+    border: 1px solid #c9c2b0;
+    color: #1a2b4a;
+}
+
+.btn-outline:hover {
+    background: #f0ebdd;
+    border-color: #1a2b4a;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    border-radius: 0 !important;
+    border: 1px solid #c9c2b0 !important;
+    background: #fdfcf8 !important;
+    color: #1a2b4a !important;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #1a2b4a !important;
+    box-shadow: 0 0 0 2px rgba(26,43,74,0.1);
+}
+
+.content-area {
+    background: #f5f1e8;
+}
+</style>
+{% endblock %}
 
 {% block page_title %}
     <h1>Admin Users</h1>
@@ -9,7 +139,6 @@
 
 {% block content %}
 
-<!-- Stats -->
 <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
     <div class="stat-card">
         <div class="stat-header"><span class="stat-title">Total Admins</span></div>
@@ -17,40 +146,29 @@
     </div>
     <div class="stat-card">
         <div class="stat-header"><span class="stat-title">Super Admins</span></div>
-        <div class="stat-value">
-            {% for a in admin_users %}{% if a.role == 'super_admin' %}<span data-count="sa"></span>{% endif %}{% endfor %}
-            <span id="countSuperAdmins">0</span>
-        </div>
+        <div class="stat-value"><span id="countSuperAdmins">0</span></div>
     </div>
     <div class="stat-card">
         <div class="stat-header"><span class="stat-title">Online Now</span></div>
-        <div class="stat-value">
-            <span id="countOnline">0</span>
-        </div>
+        <div class="stat-value"><span id="countOnline">0</span></div>
     </div>
 </div>
 
-<!-- Toolbar -->
 <div class="card" style="margin-bottom: 20px;">
     <div class="card-body" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <input type="text" id="searchInput" placeholder="Search by email or username..."
-               style="flex: 1; min-width: 240px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit;">
-
-        <select id="roleFilter"
-                style="padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; background: white;">
+        <input type="text" id="searchInput" placeholder="Search by email or username..." style="flex: 1; min-width: 240px; padding: 10px 14px; font-size: 14px;">
+        <select id="roleFilter" style="padding: 10px 14px; font-size: 14px; background: #fdfcf8;">
             <option value="">All Roles</option>
             {% for role in roles %}
                 <option value="{{ role }}">{{ role|title }}</option>
             {% endfor %}
         </select>
-
         <button class="btn btn-primary" onclick="openCreateModal()">
             <span>＋</span><span>New Admin</span>
         </button>
     </div>
 </div>
 
-<!-- Table -->
 <div class="card">
     <div class="card-header">
         <div class="card-title">
@@ -81,13 +199,13 @@
 
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 14px; border-radius: 0;">
                                 {{ admin.user.email|first|upper }}
                             </div>
                             <div>
-                                <div style="font-weight: 500;">{{ admin.user.email }}</div>
+                                <div style="font-weight: 600;">{{ admin.user.email }}</div>
                                 {% if admin.user.username and admin.user.username != admin.user.email %}
-                                    <div style="font-size: 12px; color: var(--text-secondary);">
+                                    <div style="font-size: 12px; color: #64748b; font-family: 'IBM Plex Mono', monospace;">
                                         @{{ admin.user.username }}
                                     </div>
                                 {% endif %}
@@ -117,15 +235,15 @@
                         {% endif %}
                     </td>
 
-                    <td>{{ admin.login_count }}</td>
+                    <td style="font-family: 'IBM Plex Mono', monospace;">{{ admin.login_count }}</td>
 
-                    <td>
+                    <td style="font-family: 'IBM Plex Mono', monospace; font-size: 12px;">
                         {% if admin.last_activity %}
                             <span title="{{ admin.last_activity|date:'Y-m-d H:i:s' }}">
                                 {{ admin.last_activity|timesince }} ago
                             </span>
                         {% else %}
-                            <span style="color: var(--text-muted);">Never</span>
+                            <span style="color: #94a3b8;">Never</span>
                         {% endif %}
                     </td>
 
@@ -148,7 +266,7 @@
                             </button>
                             {% if admin.user.id != request.user.id %}
                                 <button class="btn btn-outline"
-                                        style="color: var(--danger); border-color: rgba(239,68,68,0.3);"
+                                        style="color: #991b1b; border-color: #991b1b;"
                                         data-id="{{ admin.id }}"
                                         data-email="{{ admin.user.email }}"
                                         onclick="confirmDelete(this)">
@@ -160,7 +278,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+                    <td colspan="7" style="text-align: center; padding: 48px; color: #64748b;">
                         No admin users yet. Click <strong>New Admin</strong> to add one.
                     </td>
                 </tr>
@@ -170,17 +288,15 @@
     </div>
 </div>
 
-<!-- Role Modal -->
 <div id="roleModal" style="display: none; position: fixed; inset: 0; background: rgba(15,17,25,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: var(--radius-lg); padding: 28px; max-width: 420px; width: 90%; box-shadow: var(--shadow-xl);">
-        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 6px;">Change Role</h3>
-        <p id="roleModalEmail" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;"></p>
+    <div style="background: #fdfcf8; border: 1px solid #c9c2b0; padding: 28px; max-width: 420px; width: 90%;">
+        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 6px; font-family: 'Source Serif 4', serif;">Change Role</h3>
+        <p id="roleModalEmail" style="font-size: 13px; color: #64748b; margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace;"></p>
 
         <form id="roleForm" method="post" action="">
             {% csrf_token %}
-            <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px;">Role</label>
-            <select name="role" id="roleSelect"
-                    style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; margin-bottom: 24px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #1a2b4a; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace;">Role</label>
+            <select name="role" id="roleSelect" style="width: 100%; padding: 10px 14px; font-size: 14px; margin-bottom: 24px; background: #fdfcf8;">
                 {% for role in roles %}
                     <option value="{{ role }}">{{ role|title }}</option>
                 {% endfor %}
@@ -194,25 +310,21 @@
     </div>
 </div>
 
-<!-- Create Modal -->
 <div id="createModal" style="display: none; position: fixed; inset: 0; background: rgba(15,17,25,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: var(--radius-lg); padding: 28px; max-width: 460px; width: 90%; box-shadow: var(--shadow-xl);">
-        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">New Admin User</h3>
+    <div style="background: #fdfcf8; border: 1px solid #c9c2b0; padding: 28px; max-width: 460px; width: 90%;">
+        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 20px; font-family: 'Source Serif 4', serif;">New Admin User</h3>
 
         <form id="createForm" method="post" action="{% url 'super_admin:admin_user_create' %}">
             {% csrf_token %}
 
-            <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px;">Email</label>
-            <input type="email" name="email" required
-                   style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #1a2b4a; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace;">Email</label>
+            <input type="email" name="email" required style="width: 100%; padding: 10px 14px; font-size: 14px; margin-bottom: 16px;">
 
-            <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px;">Password</label>
-            <input type="password" name="password" required minlength="8"
-                   style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; margin-bottom: 16px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #1a2b4a; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace;">Password</label>
+            <input type="password" name="password" required minlength="8" style="width: 100%; padding: 10px 14px; font-size: 14px; margin-bottom: 16px;">
 
-            <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px;">Role</label>
-            <select name="role" required
-                    style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; margin-bottom: 24px;">
+            <label style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #1a2b4a; margin-bottom: 8px; font-family: 'IBM Plex Mono', monospace;">Role</label>
+            <select name="role" required style="width: 100%; padding: 10px 14px; font-size: 14px; margin-bottom: 24px; background: #fdfcf8;">
                 {% for role in roles %}
                     <option value="{{ role }}" {% if role == 'admin' %}selected{% endif %}>{{ role|title }}</option>
                 {% endfor %}
@@ -261,26 +373,22 @@
     roleFilter.addEventListener('change', applyFilters);
     applyFilters();
 
-    // Stats
     document.getElementById('countSuperAdmins').textContent = allRows.filter(r => r.dataset.super === '1').length;
     document.getElementById('countOnline').textContent      = allRows.filter(r => r.dataset.online === '1').length;
 })();
 
-// Role modal — uses {% url %} so it works regardless of mount path
 const ROLE_URL_TEMPLATE = "{% url 'super_admin:admin_user_role' admin_id='00000000-0000-0000-0000-000000000000' %}";
 
 function openRoleModal(btn) {
-    const modal = document.getElementById('roleModal');
     document.getElementById('roleModalEmail').textContent = btn.dataset.email;
     document.getElementById('roleSelect').value = btn.dataset.role;
     document.getElementById('roleForm').action = ROLE_URL_TEMPLATE.replace('00000000-0000-0000-0000-000000000000', btn.dataset.id);
-    modal.style.display = 'flex';
+    document.getElementById('roleModal').style.display = 'flex';
 }
 function closeRoleModal() {
     document.getElementById('roleModal').style.display = 'none';
 }
 
-// Create modal
 function openCreateModal() {
     document.getElementById('createModal').style.display = 'flex';
 }
@@ -288,7 +396,6 @@ function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
 }
 
-// Delete — build form with URL from {% url %}
 const DELETE_URL_TEMPLATE = "{% url 'super_admin:admin_user_delete' admin_id='00000000-0000-0000-0000-000000000000' %}";
 
 function confirmDelete(btn) {
@@ -308,7 +415,6 @@ function confirmDelete(btn) {
     form.submit();
 }
 
-// Escape / backdrop
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeRoleModal(); closeCreateModal(); }
 });
