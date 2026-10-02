@@ -1,0 +1,340 @@
+{# apps/super_admin/templates/super_admin/transaction_detail.html #}
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Transaction {{ transaction.id|slice:":8" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+body,
+.sidebar,
+.top-bar,
+.card,
+.data-table,
+.btn,
+input,
+select {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+}
+
+.data-table th,
+.stat-title,
+.nav-section-title,
+label,
+.badge,
+.btn,
+.stat-label,
+.detail-label {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    letter-spacing: 0.3px;
+}
+
+.stat-value,
+.page-title h1,
+.card-title {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+    font-weight: 700;
+}
+
+.card,
+.stat-card {
+    border: 1px solid #c9c2b0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fdfcf8;
+}
+
+.card-header {
+    border-bottom: 1px solid #c9c2b0;
+    background: #faf8f3;
+    padding: 16px 24px;
+}
+
+.card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a2b4a;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 0;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid currentColor;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success { background: #ecfdf5; color: #065f46; }
+.badge-warning { background: #fffbeb; color: #92400e; }
+.badge-danger  { background: #fef2f2; color: #991b1b; }
+.badge-info    { background: #eff6ff; color: #1e40af; }
+.badge-secondary { background: #f5f1e8; color: #475569; }
+
+.btn {
+    padding: 8px 14px;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary { background: #1a2b4a; color: #f5f1e8; border-color: #1a2b4a; }
+.btn-primary:hover { background: #0f1c33; }
+
+.btn-outline { background: #faf8f3; border: 1px solid #c9c2b0; color: #1a2b4a; }
+.btn-outline:hover { background: #f0ebdd; border-color: #1a2b4a; }
+
+.btn-danger { background: #991b1b; color: #f5f1e8; border-color: #991b1b; }
+.btn-danger:hover { background: #7f1d1d; }
+
+.content-area { background: #f5f1e8; }
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px 1fr;
+    gap: 0;
+    border: 1px solid #e5e0d3;
+    background: #fdfcf8;
+}
+
+.detail-label {
+    padding: 12px 16px;
+    background: #faf8f3;
+    border-bottom: 1px solid #e5e0d3;
+    border-right: 1px solid #e5e0d3;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1a2b4a;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.detail-value {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e0d3;
+    border-right: 1px solid #e5e0d3;
+    font-size: 14px;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.detail-value:nth-child(4n) { border-right: none; }
+
+@media (max-width: 900px) {
+    .detail-grid { grid-template-columns: 160px 1fr; }
+    .detail-value:nth-child(4n) { border-right: 1px solid #e5e0d3; }
+    .detail-value:nth-child(2n) { border-right: none; }
+}
+
+.text-mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.amount-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a2b4a;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.amount-display small {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin-left: 8px;
+}
+
+.tx-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.status-pill {
+    padding: 8px 16px;
+    border: 2px solid currentColor;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+    <h1>Transaction Detail</h1>
+    <p>Full ledger entry and associated wallet information</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-body">
+        <div class="tx-header">
+            <div style="flex: 1; min-width: 260px;">
+                <div class="amount-display">
+                    {{ transaction.amount_sats|default:0 }}<small>SATS</small>
+                </div>
+                <div class="text-mono" style="margin-top: 10px;">
+                    Transaction ID: {{ transaction.id }}
+                </div>
+            </div>
+
+            <div>
+                {% if transaction.status == 'completed' %}
+                    <span class="status-pill badge-success">Completed</span>
+                {% elif transaction.status == 'pending' %}
+                    <span class="status-pill badge-warning">Pending</span>
+                {% elif transaction.status == 'failed' %}
+                    <span class="status-pill badge-danger">Failed</span>
+                {% elif transaction.status == 'refunded' %}
+                    <span class="status-pill badge-secondary">Refunded</span>
+                {% else %}
+                    <span class="status-pill badge-secondary">{{ transaction.status|title }}</span>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                {% if transaction.status == 'completed' %}
+                    <button class="btn btn-outline"
+                            data-id="{{ transaction.id }}"
+                            onclick="confirmRefund(this)">
+                        Issue Refund
+                    </button>
+                {% endif %}
+                <a href="{% url 'super_admin:transactions' %}" class="btn btn-outline">Back to Transactions</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <h3 class="card-title">Ledger Entry</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="detail-grid">
+            <div class="detail-label">Type</div>
+            <div class="detail-value">{{ transaction.type|title|default:"—" }}</div>
+
+            <div class="detail-label">Status</div>
+            <div class="detail-value">{{ transaction.status|title|default:"—" }}</div>
+
+            <div class="detail-label">Amount</div>
+            <div class="detail-value text-mono">{{ transaction.amount_sats|default:0 }} sats</div>
+
+            <div class="detail-label">Fee</div>
+            <div class="detail-value text-mono">
+                {% if transaction.fee_sats %}{{ transaction.fee_sats }} sats{% else %}—{% endif %}
+            </div>
+
+            <div class="detail-label">Created At</div>
+            <div class="detail-value text-mono">{{ transaction.created_at|date:"Y-m-d H:i:s" }}</div>
+
+            <div class="detail-label">Updated At</div>
+            <div class="detail-value text-mono">{{ transaction.updated_at|date:"Y-m-d H:i:s" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <h3 class="card-title">Wallets</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="detail-grid" style="grid-template-columns: 200px 1fr;">
+            <div class="detail-label">From Wallet</div>
+            <div class="detail-value">
+                {% if transaction.from_wallet %}
+                    <div class="text-mono" style="font-size: 13px; color: #1a2b4a;">
+                        {{ transaction.from_wallet.id }}
+                    </div>
+                {% else %}
+                    <span style="color: #94a3b8;">—</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-label">To Wallet</div>
+            <div class="detail-value">
+                {% if transaction.to_wallet %}
+                    <div class="text-mono" style="font-size: 13px; color: #1a2b4a;">
+                        {{ transaction.to_wallet.id }}
+                    </div>
+                {% else %}
+                    <span style="color: #94a3b8;">—</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if transaction.memo or transaction.description %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Notes</h3>
+    </div>
+    <div class="card-body">
+        <p style="font-size: 14px; line-height: 1.7; color: #1e293b; margin: 0;">
+            {{ transaction.memo|default:transaction.description }}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const REFUND_URL = "{% url 'super_admin:transaction_refund' transaction_id='00000000-0000-0000-0000-000000000000' %}";
+
+function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+}
+
+function confirmRefund(btn) {
+    if (!confirm('Issue a refund for this transaction? A reverse transaction will be created.')) return;
+
+    const url = REFUND_URL.replace('00000000-0000-0000-0000-000000000000', btn.dataset.id);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Refund failed');
+        }
+    })
+    .catch(() => alert('Request failed'));
+}
+</script>
+{% endblock %}
