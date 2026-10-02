@@ -1,0 +1,161 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-header{
+    background:#fdfcf8;
+    border:1px solid #c9c2b0;
+    padding:32px;
+    display:flex;
+    align-items:center;
+    gap:28px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+}
+.profile-avatar{
+    width:96px;
+    height:96px;
+    background:#1a2b4a;
+    color:#f5f1e8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:36px;
+    flex-shrink:0;
+}
+.profile-meta{flex:1;min-width:240px;}
+.profile-meta h2{
+    font-family:'Source Serif 4',serif;
+    font-size:26px;
+    font-weight:700;
+    color:#1a2b4a;
+    margin-bottom:6px;
+}
+.profile-meta .profile-email{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:#64748b;
+    margin-bottom:14px;
+}
+.profile-meta .profile-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.detail-grid{display:grid;grid-template-columns:220px 1fr;border:1px solid #e5e0d3;background:#fdfcf8;}
+.detail-label{padding:12px 16px;background:#faf8f3;border-bottom:1px solid #e5e0d3;border-right:1px solid #e5e0d3;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1a2b4a;font-weight:600;font-family:'IBM Plex Mono',monospace;display:flex;align-items:center;}
+.detail-value{padding:12px 16px;border-bottom:1px solid #e5e0d3;font-size:14px;color:#1e293b;}
+.text-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#64748b;}
+</style>
+{% endblock %}
+
+{% block page_title %}
+    <h1>My Profile</h1>
+    <p>Your administrator account details</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="profile-header">
+    <div class="profile-avatar">{{ request.user.email|first|upper }}</div>
+    <div class="profile-meta">
+        <h2>{{ request.user.get_full_name|default:request.user.email }}</h2>
+        <div class="profile-email">{{ request.user.email }}</div>
+        <div class="profile-tags">
+            {% if request.user.is_superuser %}
+                <span class="badge badge-danger">Super Administrator</span>
+            {% elif request.user.is_staff %}
+                <span class="badge badge-info">Administrator</span>
+            {% else %}
+                <span class="badge badge-secondary">User</span>
+            {% endif %}
+            {% if request.user.is_active %}
+                <span class="badge badge-success">Active</span>
+            {% else %}
+                <span class="badge badge-danger">Inactive</span>
+            {% endif %}
+        </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="{% url 'super_admin:profile_edit' %}" class="btn btn-primary">Edit Profile</a>
+        <a href="{% url 'super_admin:change_password' %}" class="btn btn-outline">Change Password</a>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Account Information</div></div>
+    <div class="card-body" style="padding: 0;">
+        <div class="detail-grid">
+            <div class="detail-label">Email</div>
+            <div class="detail-value">{{ request.user.email }}</div>
+
+            <div class="detail-label">Username</div>
+            <div class="detail-value">{{ request.user.username|default:"—" }}</div>
+
+            <div class="detail-label">First Name</div>
+            <div class="detail-value">{{ request.user.first_name|default:"—" }}</div>
+
+            <div class="detail-label">Last Name</div>
+            <div class="detail-value">{{ request.user.last_name|default:"—" }}</div>
+
+            <div class="detail-label">Staff Status</div>
+            <div class="detail-value">{% if request.user.is_staff %}Yes{% else %}No{% endif %}</div>
+
+            <div class="detail-label">Superuser Status</div>
+            <div class="detail-value">{% if request.user.is_superuser %}Yes{% else %}No{% endif %}</div>
+
+            <div class="detail-label">Account Active</div>
+            <div class="detail-value">{% if request.user.is_active %}Yes{% else %}No{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Session History</div></div>
+    <div class="card-body" style="padding: 0;">
+        <div class="detail-grid">
+            <div class="detail-label">Last Login</div>
+            <div class="detail-value text-mono">
+                {% if request.user.last_login %}{{ request.user.last_login|date:"Y-m-d H:i:s" }}{% else %}—{% endif %}
+            </div>
+
+            <div class="detail-label">Date Joined</div>
+            <div class="detail-value text-mono">{{ request.user.date_joined|date:"Y-m-d H:i:s" }}</div>
+        </div>
+    </div>
+</div>
+
+{% if request.user.admin_profile %}
+<div class="card">
+    <div class="card-header"><div class="card-title">Administrator Profile</div></div>
+    <div class="card-body" style="padding: 0;">
+        <div class="detail-grid">
+            <div class="detail-label">Role</div>
+            <div class="detail-value">{{ request.user.admin_profile.get_role_display }}</div>
+
+            <div class="detail-label">Login Count</div>
+            <div class="detail-value text-mono">{{ request.user.admin_profile.login_count|default:0 }}</div>
+
+            <div class="detail-label">Last Activity</div>
+            <div class="detail-value text-mono">
+                {% if request.user.admin_profile.last_activity %}{{ request.user.admin_profile.last_activity|date:"Y-m-d H:i:s" }}{% else %}—{% endif %}
+            </div>
+
+            <div class="detail-label">Last Login IP</div>
+            <div class="detail-value text-mono">{{ request.user.admin_profile.last_login_ip|default:"—" }}</div>
+
+            <div class="detail-label">Two-Factor Auth</div>
+            <div class="detail-value">
+                {% if request.user.admin_profile.two_factor_enabled %}
+                    <span class="badge badge-success">Enabled</span>
+                {% else %}
+                    <span class="badge badge-secondary">Disabled</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
