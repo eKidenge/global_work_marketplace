@@ -1,0 +1,97 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Announcements{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+body,.sidebar,.top-bar,.card,.data-table,.btn,input,select{font-family:'Source Serif 4','Times New Roman',Georgia,serif !important;}
+.data-table th,.stat-title,label,.badge,.btn,.stat-label{font-family:'IBM Plex Mono','Courier New',monospace !important;letter-spacing:0.3px;}
+.stat-value,.page-title h1,.card-title{font-family:'Source Serif 4','Times New Roman',serif !important;font-weight:700;}
+.card,.stat-card{border:1px solid #c9c2b0;border-radius:0;box-shadow:none;background:#fdfcf8;}
+.card-header{border-bottom:1px solid #c9c2b0;background:#faf8f3;}
+.data-table{width:100%;border-collapse:collapse;}
+.data-table thead tr{background:#1a2b4a;}
+.data-table th{background:#1a2b4a;color:#f5f1e8;padding:12px 16px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #b8944d;}
+.data-table td{padding:14px 16px;border-bottom:1px solid #e5e0d3;font-size:14px;color:#1e293b;}
+.data-table tr:hover{background:#faf8f3;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:0;font-size:10px;font-weight:600;border:1px solid currentColor;text-transform:uppercase;letter-spacing:0.5px;}
+.badge-success{background:#ecfdf5;color:#065f46;}.badge-warning{background:#fffbeb;color:#92400e;}.badge-danger{background:#fef2f2;color:#991b1b;}.badge-info{background:#eff6ff;color:#1e40af;}.badge-secondary{background:#f5f1e8;color:#475569;}
+.btn{padding:8px 14px;border-radius:0;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;}
+.btn-primary{background:#1a2b4a;color:#f5f1e8;border-color:#1a2b4a;}
+.btn-primary:hover{background:#0f1c33;}
+.btn-outline{background:#faf8f3;border:1px solid #c9c2b0;color:#1a2b4a;}
+.btn-outline:hover{background:#f0ebdd;border-color:#1a2b4a;}
+.btn-sm{padding:5px 10px;font-size:10px;}
+.content-area{background:#f5f1e8;}
+.text-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#64748b;}
+.text-center{text-align:center;color:#64748b;padding:32px !important;}
+.font-medium{font-weight:600;color:#1a2b4a;}
+</style>
+{% endblock %}
+
+{% block page_title %}<h1>Announcements</h1><p>Broadcast messages to platform users</p>{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body" style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <input type="text" id="searchInput" placeholder="Search announcements..." style="flex: 1; min-width: 240px; padding: 10px 14px; font-size: 14px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+        <a href="{% url 'super_admin:announcement_create' %}" class="btn btn-primary"><span>＋</span><span>New Announcement</span></a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">All Announcements <span id="visibleCount" class="text-mono">{{ announcements|length }} total</span></div></div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table" id="annTable">
+            <thead>
+                <tr><th>Title</th><th>Type</th><th>Audience</th><th>Status</th><th>Start</th><th>End</th><th>Views</th><th style="text-align: right;">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for a in announcements %}
+                <tr data-title="{{ a.title|lower }}">
+                    <td class="font-medium">{{ a.title|truncatechars:50 }}</td>
+                    <td>
+                        {% if a.announcement_type == 'info' %}<span class="badge badge-info">Info</span>
+                        {% elif a.announcement_type == 'warning' %}<span class="badge badge-warning">Warning</span>
+                        {% elif a.announcement_type == 'success' %}<span class="badge badge-success">Success</span>
+                        {% elif a.announcement_type == 'error' %}<span class="badge badge-danger">Error</span>
+                        {% elif a.announcement_type == 'maintenance' %}<span class="badge badge-warning">Maintenance</span>
+                        {% else %}<span class="badge badge-secondary">{{ a.announcement_type|title }}</span>{% endif %}
+                    </td>
+                    <td class="text-mono">{{ a.target_audience|title }}</td>
+                    <td>
+                        {% if a.is_active %}<span class="badge badge-success">Active</span>
+                        {% else %}<span class="badge badge-secondary">Inactive</span>{% endif %}
+                    </td>
+                    <td class="text-mono">{{ a.start_date|date:"Y-m-d" }}</td>
+                    <td class="text-mono">{% if a.end_date %}{{ a.end_date|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+                    <td class="text-mono">{{ a.view_count|default:0 }}</td>
+                    <td style="text-align: right;">
+                        <div style="display: inline-flex; gap: 6px;">
+                            <a href="{% url 'super_admin:announcement_edit' a.id %}" class="btn btn-sm btn-outline">Edit</a>
+                            <button class="btn btn-sm btn-outline" data-id="{{ a.id }}" onclick="toggleAnn(this)">Toggle</button>
+                            <button class="btn btn-sm btn-outline" style="color:#991b1b;border-color:#991b1b;" data-id="{{ a.id }}" data-title="{{ a.title|escapejs }}" onclick="deleteAnn(this)">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center">No announcements yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){const s=document.getElementById('searchInput'),t=document.getElementById('annTable'),c=document.getElementById('visibleCount'),rows=Array.from(t.querySelectorAll('tbody tr[data-title]'));function f(){const q=(s.value||'').trim().toLowerCase();let v=0;rows.forEach(r=>{const m=!q||r.dataset.title.includes(q);r.style.display=m?'':'none';if(m)v++;});c.textContent=v+' of '+rows.length+' shown';}s.addEventListener('input',f);f();})();
+const TOGGLE_URL="{% url 'super_admin:announcement_toggle' announcement_id='00000000-0000-0000-0000-000000000000' %}";
+const DELETE_URL="{% url 'super_admin:announcement_delete' announcement_id='00000000-0000-0000-0000-000000000000' %}";
+function gc(n){const v=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');return v?v.pop():'';}
+function toggleAnn(b){fetch(TOGGLE_URL.replace('00000000-0000-0000-0000-000000000000',b.dataset.id),{method:'POST',headers:{'X-CSRFToken':gc('csrftoken'),'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(d=>{if(d.success)location.reload();else alert('Failed');});}
+function deleteAnn(b){if(!confirm('Delete "'+b.dataset.title+'"?'))return;fetch(DELETE_URL.replace('00000000-0000-0000-0000-000000000000',b.dataset.id),{method:'POST',headers:{'X-CSRFToken':gc('csrftoken'),'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(d=>{if(d.success)location.reload();else alert('Failed');});}
+</script>
+{% endblock %}
