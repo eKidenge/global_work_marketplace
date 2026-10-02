@@ -82,6 +82,33 @@ class SuperAdminDashboard(View):
         now = timezone.now()
         today_start = now.replace(hour=0, minute=0, second=0)
 
+        # ---------- daily stats (last 30 days) ----------
+        daily_stats = []
+        for i in range(29, -1, -1):
+            day = now - timedelta(days=i)
+            day_start = day.replace(hour=0, minute=0, second=0)
+            day_end = day_start + timedelta(days=1)
+            count = Task.objects.filter(created_at__range=[day_start, day_end]).count()
+            daily_stats.append({
+                'date': day.strftime('%Y-%m-%d'),
+                'tasks': count,
+                'bar_pct': 0,
+            })
+
+        max_count = max((d['tasks'] for d in daily_stats), default=0) or 1
+        for d in daily_stats:
+            d['bar_pct'] = max(5, int(d['tasks'] / max_count * 100))
+
+        # ---------- task volume by state ----------
+        task_volume = []
+        total_tasks = Task.objects.count() or 1
+        for row in Task.objects.values('state').annotate(count=Count('id')).order_by('-count'):
+            task_volume.append({
+                'state': row['state'],
+                'count': row['count'],
+                'pct': int(row['count'] / total_tasks * 100),
+            })
+
         context = {
             'stats': {
                 'total_agents': Agent.objects.count(),
@@ -99,6 +126,8 @@ class SuperAdminDashboard(View):
             'recent_agents': Agent.objects.select_related('user').order_by('-last_heartbeat')[:10],
             'recent_transactions': Transaction.objects.select_related('from_wallet', 'to_wallet').order_by('-created_at')[:10],
             'system_alerts': self.get_system_alerts(),
+            'daily_stats': daily_stats,
+            'task_volume': task_volume,
         }
         return context
 
