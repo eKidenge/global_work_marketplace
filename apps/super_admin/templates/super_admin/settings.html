@@ -1,0 +1,239 @@
+{# apps/super_admin/templates/super_admin/settings.html #}
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}System Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+body, .sidebar, .top-bar, .card, .data-table, .btn, input, select, textarea {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+}
+.data-table th, .stat-title, .nav-section-title, label, .badge, .btn, .setting-key {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    letter-spacing: 0.3px;
+}
+.card { border: 1px solid #c9c2b0; border-radius: 0; box-shadow: none; background: #fdfcf8; }
+.card-header { border-bottom: 1px solid #c9c2b0; background: #faf8f3; padding: 16px 24px; }
+.card-title { font-size: 17px; font-weight: 700; color: #1a2b4a; font-family: 'Source Serif 4', serif; }
+.badge {
+    display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 0;
+    font-size: 10px; font-weight: 600; border: 1px solid currentColor;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.badge-success { background: #ecfdf5; color: #065f46; }
+.badge-warning { background: #fffbeb; color: #92400e; }
+.badge-danger { background: #fef2f2; color: #991b1b; }
+.badge-info { background: #eff6ff; color: #1e40af; }
+.badge-secondary { background: #f5f1e8; color: #475569; }
+.btn {
+    padding: 8px 14px; border-radius: 0; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.btn-primary { background: #1a2b4a; color: #f5f1e8; border-color: #1a2b4a; }
+.btn-primary:hover { background: #0f1c33; }
+.btn-outline { background: #faf8f3; border: 1px solid #c9c2b0; color: #1a2b4a; }
+.btn-outline:hover { background: #f0ebdd; border-color: #1a2b4a; }
+.content-area { background: #f5f1e8; }
+.text-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #64748b; }
+.text-center { text-align: center; color: #64748b; padding: 32px !important; }
+.font-medium { font-weight: 600; color: #1a2b4a; }
+
+/* Settings sub-nav */
+.settings-nav {
+    display: flex; gap: 0; border: 1px solid #c9c2b0; background: #fdfcf8;
+    margin-bottom: 24px; flex-wrap: wrap;
+}
+.settings-nav a {
+    padding: 14px 20px; text-decoration: none; color: #64748b;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+    border-right: 1px solid #e5e0d3; border-bottom: 3px solid transparent;
+}
+.settings-nav a:hover { background: #faf8f3; color: #1a2b4a; }
+.settings-nav a.active {
+    color: #1a2b4a; background: #faf8f3; border-bottom-color: #1a2b4a;
+}
+
+/* Setting rows */
+.setting-row {
+    display: grid;
+    grid-template-columns: 260px 1fr 200px;
+    gap: 0;
+    border-bottom: 1px solid #e5e0d3;
+    align-items: stretch;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-key {
+    padding: 16px 20px;
+    background: #faf8f3;
+    border-right: 1px solid #e5e0d3;
+    display: flex; flex-direction: column; justify-content: center;
+}
+.setting-key strong {
+    display: block; font-size: 12px; color: #1a2b4a;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+    margin-bottom: 4px;
+}
+.setting-key small {
+    font-size: 10px; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.setting-value {
+    padding: 14px 20px;
+    display: flex; align-items: center;
+    border-right: 1px solid #e5e0d3;
+}
+.setting-value input,
+.setting-value select,
+.setting-value textarea {
+    width: 100%; padding: 8px 12px; font-size: 14px;
+    border: 1px solid #c9c2b0; background: #fdfcf8; color: #1a2b4a;
+    border-radius: 0;
+}
+.setting-value input:focus,
+.setting-value select:focus,
+.setting-value textarea:focus {
+    outline: none; border-color: #1a2b4a;
+    box-shadow: 0 0 0 2px rgba(26,43,74,0.1);
+}
+.setting-meta {
+    padding: 14px 20px;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 6px; font-size: 11px;
+}
+.setting-description {
+    font-size: 12px; color: #64748b; line-height: 1.5;
+}
+.setting-save-btn {
+    padding: 6px 12px; font-size: 10px; background: #1a2b4a;
+    color: #f5f1e8; border: none; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.setting-save-btn:hover { background: #0f1c33; }
+
+@media (max-width: 900px) {
+    .setting-row { grid-template-columns: 1fr; }
+    .setting-key { border-right: none; border-bottom: 1px solid #e5e0d3; }
+    .setting-value { border-right: none; }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+    <h1>System Settings</h1>
+    <p>Platform-wide configuration and defaults</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="settings-nav">
+    <a href="{% url 'super_admin:settings' %}" class="active">All Settings</a>
+    <a href="{% url 'super_admin:general_settings' %}">General</a>
+    <a href="{% url 'super_admin:payment_settings' %}">Payments</a>
+    <a href="{% url 'super_admin:agent_settings' %}">Agents</a>
+    <a href="{% url 'super_admin:task_settings' %}">Tasks</a>
+    <a href="{% url 'super_admin:security_settings' %}">Security</a>
+    <a href="{% url 'super_admin:email_settings' %}">Email</a>
+</div>
+
+{% if settings %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">All Configuration Keys <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #64748b; font-weight: 500; margin-left: 8px;">{{ settings|length }} entries</span></div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        {% for setting in settings %}
+        <div class="setting-row">
+            <div class="setting-key">
+                <strong>{{ setting.key }}</strong>
+                <small>{{ setting.category|default:"general" }}</small>
+            </div>
+            <div class="setting-value">
+                {% if setting.setting_type == 'boolean' %}
+                    <select id="val-{{ setting.id }}" data-key="{{ setting.key }}" style="width: 100%; padding: 8px 12px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+                        <option value="true" {% if setting.value %}selected{% endif %}>Enabled</option>
+                        <option value="false" {% if not setting.value %}selected{% endif %}>Disabled</option>
+                    </select>
+                {% elif setting.setting_type == 'integer' or setting.setting_type == 'float' %}
+                    <input type="number" id="val-{{ setting.id }}" data-key="{{ setting.key }}" value="{{ setting.value }}" step="{% if setting.setting_type == 'float' %}0.01{% else %}1{% endif %}" style="width: 100%; padding: 8px 12px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+                {% else %}
+                    <input type="text" id="val-{{ setting.id }}" data-key="{{ setting.key }}" value="{{ setting.value }}" style="width: 100%; padding: 8px 12px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+                {% endif %}
+            </div>
+            <div class="setting-meta">
+                {% if setting.is_public %}
+                    <span class="badge badge-info">Public</span>
+                {% endif %}
+                {% if setting.is_encrypted %}
+                    <span class="badge badge-warning">Encrypted</span>
+                {% endif %}
+                {% if setting.description %}
+                    <span class="setting-description">{{ setting.description|truncatechars:80 }}</span>
+                {% endif %}
+                <button class="setting-save-btn" onclick="saveSetting('{{ setting.key }}', 'val-{{ setting.id }}')">Save</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-center">No system settings have been defined yet.</p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const UPDATE_URL = "{% url 'super_admin:setting_update' key='__KEY__' %}";
+
+function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+}
+
+function saveSetting(key, elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    let value = el.value;
+    // Try to coerce JSON-safe values
+    if (value === 'true') value = 'true';
+    if (value === 'false') value = 'false';
+
+    const url = UPDATE_URL.replace('__KEY__', encodeURIComponent(key));
+
+    const formData = new FormData();
+    formData.append('value', value);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const original = el.style.borderColor;
+            el.style.borderColor = '#065f46';
+            setTimeout(() => { el.style.borderColor = original; }, 1200);
+        } else {
+            alert('Save failed');
+        }
+    })
+    .catch(() => alert('Request failed'));
+}
+</script>
+{% endblock %}
