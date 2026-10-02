@@ -1,0 +1,16 @@
+{# Generic confirm-delete modal. Include on any page with `modal_id`, `modal_title`, `modal_action_url`, `modal_target_name` #}
+<div id="{{ modal_id|default:'confirmDeleteModal' }}" style="display:none;position:fixed;inset:0;background:rgba(15,17,25,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fdfcf8;border:1px solid #c9c2b0;padding:28px;max-width:440px;width:90%;">
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:6px;font-family:'Source Serif 4',serif;color:#1a2b4a;">{{ modal_title|default:"Confirm Deletion" }}</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;">
+            Are you sure you want to delete <strong style="color:#991b1b;">{{ modal_target_name }}</strong>? This action cannot be undone.
+        </p>
+        <form method="post" action="{{ modal_action_url }}">
+            {% csrf_token %}
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('{{ modal_id|default:'confirmDeleteModal' }}').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background:#991b1b;border-color:#991b1b;">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
