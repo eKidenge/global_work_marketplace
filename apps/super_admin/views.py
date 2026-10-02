@@ -722,7 +722,7 @@ class AuditLogExportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class DailyReportView(View):
-    template_name = 'super_admin/daily_report.html'
+    template_name = 'super_admin/reports/daily_report.html'
 
     def get(self, request):
         date = request.GET.get('date', timezone.now().date())
