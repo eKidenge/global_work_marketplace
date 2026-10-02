@@ -1,0 +1,100 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Wallets{% endblock %}
+
+{% block page_title %}
+    <h1>Wallets</h1>
+    <p>All user wallets and balances on the platform</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Total Balance</span></div>
+        <div class="stat-value" style="font-size: 22px;">{{ total_balance|floatformat:0 }}</div>
+        <div class="stat-label">sats</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Wallet Count</span></div>
+        <div class="stat-value">{{ wallets|length }}</div>
+        <div class="stat-label">active</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="searchInput" placeholder="Search by wallet ID or user email..."
+               style="flex: 1; min-width: 240px; padding: 10px 14px; font-size: 14px; border: 1px solid #c9c2b0; background: #fdfcf8;">
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Wallet Registry <span id="visibleCount" class="text-mono" style="margin-left: 8px;">{{ wallets|length }} total</span></div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table" id="walletsTable">
+            <thead>
+                <tr>
+                    <th>Wallet ID</th>
+                    <th>User</th>
+                    <th>Balance (sats)</th>
+                    <th>Created</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for wallet in wallets %}
+                <tr data-search="{{ wallet.id|lower }} {% if wallet.user %}{{ wallet.user.email|lower }}{% endif %}">
+                    <td class="text-mono">{{ wallet.id|slice:":12" }}</td>
+                    <td>
+                        {% if wallet.user %}
+                            <span class="font-medium">{{ wallet.user.email }}</span>
+                        {% else %}
+                            <span style="color: #94a3b8;">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-mono text-nowrap">{{ wallet.balance_sats|default:0|floatformat:0 }}</td>
+                    <td class="text-mono text-nowrap">{{ wallet.created_at|date:"Y-m-d H:i" }}</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'super_admin:wallet_detail' wallet.id %}" class="btn btn-sm btn-outline">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No wallets found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const searchInput  = document.getElementById('searchInput');
+    const table        = document.getElementById('walletsTable');
+    const visibleCount = document.getElementById('visibleCount');
+    const allRows      = Array.from(table.querySelectorAll('tbody tr[data-search]'));
+
+    function applyFilters() {
+        const q = (searchInput.value || '').trim().toLowerCase();
+        let visible = 0;
+
+        allRows.forEach(row => {
+            const matches = !q || row.dataset.search.includes(q);
+            row.style.display = matches ? '' : 'none';
+            if (matches) visible++;
+        });
+
+        visibleCount.textContent = visible + ' of ' + allRows.length + ' shown';
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    applyFilters();
+})();
+</script>
+{% endblock %}
