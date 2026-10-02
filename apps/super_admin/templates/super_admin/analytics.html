@@ -1,0 +1,231 @@
+{# apps/super_admin/templates/super_admin/analytics.html #}
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+body, .sidebar, .top-bar, .card, .data-table, .btn, input, select {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+}
+.data-table th, .stat-title, .nav-section-title, label, .badge, .btn, .stat-label {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    letter-spacing: 0.3px;
+}
+.stat-value, .page-title h1, .card-title {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+    font-weight: 700;
+}
+.card, .stat-card {
+    border: 1px solid #c9c2b0; border-radius: 0; box-shadow: none; background: #fdfcf8;
+}
+.card-header { border-bottom: 1px solid #c9c2b0; background: #faf8f3; padding: 16px 24px; }
+.card-title { font-size: 17px; font-weight: 700; color: #1a2b4a; }
+.stat-card { padding: 20px 24px; position: relative; overflow: hidden; }
+.stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #1a2b4a;
+}
+.stat-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    color: #1a2b4a; padding-bottom: 12px; border-bottom: 1px solid #e5e0d3;
+    display: block; margin-bottom: 12px;
+}
+.stat-value {
+    font-size: 32px; font-weight: 700; color: #1a2b4a; line-height: 1.1; margin-bottom: 6px;
+}
+.stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead tr { background: #1a2b4a; }
+.data-table th {
+    background: #1a2b4a; color: #f5f1e8; padding: 12px 16px; text-align: left;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 2px solid #b8944d;
+}
+.data-table td {
+    padding: 14px 16px; border-bottom: 1px solid #e5e0d3; font-size: 14px; color: #1e293b;
+}
+.data-table tr:hover { background: #faf8f3; }
+.badge {
+    display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 0;
+    font-size: 10px; font-weight: 600; border: 1px solid currentColor;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.badge-success { background: #ecfdf5; color: #065f46; }
+.badge-warning { background: #fffbeb; color: #92400e; }
+.badge-danger { background: #fef2f2; color: #991b1b; }
+.badge-info { background: #eff6ff; color: #1e40af; }
+.badge-secondary { background: #f5f1e8; color: #475569; }
+.btn {
+    padding: 8px 14px; border-radius: 0; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.btn-primary { background: #1a2b4a; color: #f5f1e8; border-color: #1a2b4a; }
+.btn-primary:hover { background: #0f1c33; }
+.btn-outline { background: #faf8f3; border: 1px solid #c9c2b0; color: #1a2b4a; }
+.btn-outline:hover { background: #f0ebdd; border-color: #1a2b4a; }
+.content-area { background: #f5f1e8; }
+.text-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #64748b; }
+.text-center { text-align: center; color: #64748b; padding: 32px !important; }
+.font-medium { font-weight: 600; color: #1a2b4a; }
+.bar-track { width: 100%; height: 8px; background: #e5e0d3; border: 1px solid #c9c2b0; }
+.bar-fill { height: 100%; background: #1a2b4a; }
+</style>
+{% endblock %}
+
+{% block page_title %}
+    <h1>Analytics</h1>
+    <p>Platform metrics, agent performance, and revenue</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Daily Stats Window</span></div>
+        <div class="stat-value">{{ daily_stats|length }}</div>
+        <div class="stat-label">days</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Top Agents</span></div>
+        <div class="stat-value">{{ agent_performance|length }}</div>
+        <div class="stat-label">tracked</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Task States</span></div>
+        <div class="stat-value">{{ task_volume|length }}</div>
+        <div class="stat-label">categories</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header"><span class="stat-title">Revenue Types</span></div>
+        <div class="stat-value">{{ revenue_stats|length }}</div>
+        <div class="stat-label">streams</div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Daily Activity (Last 30 Days)</div></div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Tasks Created</th>
+                    <th>Volume (sats)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in daily_stats %}
+                <tr>
+                    <td class="text-mono">{{ day.date }}</td>
+                    <td class="text-mono">{{ day.tasks }}</td>
+                    <td class="text-mono">{{ day.volume|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center">No data</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Top Agent Performance</div></div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Agent</th>
+                    <th>Type</th>
+                    <th>Total Tasks</th>
+                    <th>Success Rate</th>
+                    <th>Earned (sats)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agent_performance %}
+                <tr>
+                    <td class="font-medium">{{ agent.name }}</td>
+                    <td>
+                        {% if agent.agent_type == 'ai' %}
+                            <span class="badge badge-info">AI</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Human</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-mono">{{ agent.total_tasks|default:0 }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="bar-track" style="flex: 1;">
+                                <div class="bar-fill" style="width: {{ agent.success_rate|floatformat:0|default:0 }}%"></div>
+                            </div>
+                            <span class="text-mono">{{ agent.success_rate|floatformat:1|default:0 }}%</span>
+                        </div>
+                    </td>
+                    <td class="text-mono">{{ agent.total_earned|default:0|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No agents with tasks</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Task Distribution</div></div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>State</th>
+                    <th>Count</th>
+                    <th>Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in task_volume %}
+                <tr>
+                    <td class="font-medium">{{ row.state|title }}</td>
+                    <td class="text-mono">{{ row.count }}</td>
+                    <td>
+                        <div class="bar-track"><div class="bar-fill" style="width: {{ row.count }}%"></div></div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center">No tasks</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">Revenue by Type</div></div>
+    <div class="card-body" style="padding: 0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Total (sats)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in revenue_stats %}
+                <tr>
+                    <td class="font-medium">{{ row.type|title|default:"—" }}</td>
+                    <td class="text-mono">{{ row.total|default:0|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" class="text-center">No revenue data</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
