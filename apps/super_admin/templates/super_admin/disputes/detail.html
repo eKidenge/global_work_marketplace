@@ -1,0 +1,91 @@
+{% extends 'super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Dispute Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+body,.card,.btn,textarea{font-family:'Source Serif 4','Times New Roman',serif !important;}
+.card-title,.badge,.btn,.detail-label{font-family:'IBM Plex Mono','Courier New',monospace !important;letter-spacing:0.3px;}
+.card{border:1px solid #c9c2b0;border-radius:0;box-shadow:none;background:#fdfcf8;}
+.card-header{border-bottom:1px solid #c9c2b0;background:#faf8f3;padding:16px 24px;}
+.card-title{font-size:17px;font-weight:700;color:#1a2b4a;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:0;font-size:10px;font-weight:600;border:1px solid currentColor;text-transform:uppercase;letter-spacing:0.5px;}
+.badge-success{background:#ecfdf5;color:#065f46;}.badge-warning{background:#fffbeb;color:#92400e;}.badge-danger{background:#fef2f2;color:#991b1b;}.badge-info{background:#eff6ff;color:#1e40af;}.badge-secondary{background:#f5f1e8;color:#475569;}
+.btn{padding:8px 14px;border-radius:0;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px;}
+.btn-primary{background:#1a2b4a;color:#f5f1e8;border-color:#1a2b4a;}
+.btn-primary:hover{background:#0f1c33;}
+.btn-outline{background:#faf8f3;border:1px solid #c9c2b0;color:#1a2b4a;}
+.btn-outline:hover{background:#f0ebdd;}
+.content-area{background:#f5f1e8;}
+.detail-grid{display:grid;grid-template-columns:200px 1fr;border:1px solid #e5e0d3;background:#fdfcf8;}
+.detail-label{padding:12px 16px;background:#faf8f3;border-bottom:1px solid #e5e0d3;border-right:1px solid #e5e0d3;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1a2b4a;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.detail-value{padding:12px 16px;border-bottom:1px solid #e5e0d3;font-size:14px;color:#1e293b;}
+.text-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#64748b;}
+</style>
+{% endblock %}
+
+{% block page_title %}<h1>Dispute Detail</h1><p>Review and resolve dispute #{{ dispute.id|slice:":8" }}</p>{% endblock %}
+
+{% block content %}
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <div style="font-size: 22px; font-weight: 700; color: #1a2b4a;">{{ dispute.task.title|default:"Untitled Dispute" }}</div>
+            <div class="text-mono" style="margin-top: 4px;">Dispute ID: {{ dispute.id }}</div>
+        </div>
+        <div>
+            {% if dispute.status == 'open' %}<span class="badge badge-warning">Open</span>
+            {% elif dispute.status == 'resolved' %}<span class="badge badge-success">Resolved</span>
+            {% elif dispute.status == 'escalated' %}<span class="badge badge-danger">Escalated</span>
+            {% else %}<span class="badge badge-secondary">{{ dispute.status|title }}</span>{% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Details</div></div>
+    <div class="card-body" style="padding: 0;">
+        <div class="detail-grid">
+            <div class="detail-label">Raised By</div>
+            <div class="detail-value">{% if dispute.raised_by %}{{ dispute.raised_by.email }}{% else %}—{% endif %}</div>
+            <div class="detail-label">Against</div>
+            <div class="detail-value">{% if dispute.against %}{{ dispute.against.email }}{% else %}—{% endif %}</div>
+            <div class="detail-label">Task</div>
+            <div class="detail-value">{% if dispute.task %}<a href="{% url 'super_admin:task_detail' dispute.task.id %}" style="color:#1a2b4a;">{{ dispute.task.title }}</a>{% else %}—{% endif %}</div>
+            <div class="detail-label">Created</div>
+            <div class="detail-value text-mono">{{ dispute.created_at|date:"Y-m-d H:i:s" }}</div>
+            <div class="detail-label">Resolved At</div>
+            <div class="detail-value text-mono">{% if dispute.resolved_at %}{{ dispute.resolved_at|date:"Y-m-d H:i:s" }}{% else %}—{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+{% if dispute.reason or dispute.description %}
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header"><div class="card-title">Reason</div></div>
+    <div class="card-body"><p style="font-size:14px;line-height:1.7;color:#1e293b;margin:0;">{{ dispute.reason|default:dispute.description }}</p></div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header"><div class="card-title">Resolution</div></div>
+    <div class="card-body">
+        <form method="post" action="{% url 'super_admin:dispute_resolve' dispute.id %}">
+            {% csrf_token %}
+            <textarea name="resolution" required style="width:100%;min-height:120px;padding:12px;font-size:14px;border:1px solid #c9c2b0;background:#fdfcf8;color:#1a2b4a;border-radius:0;font-family:'Source Serif 4',serif;line-height:1.6;">{{ dispute.resolution|default:'' }}</textarea>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                <a href="{% url 'super_admin:disputes' %}" class="btn btn-outline">Back</a>
+                <form method="post" action="{% url 'super_admin:dispute_escalate' dispute.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline" style="color:#991b1b;border-color:#991b1b;">Escalate</button>
+                </form>
+                <button type="submit" class="btn btn-primary">Resolve Dispute</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
