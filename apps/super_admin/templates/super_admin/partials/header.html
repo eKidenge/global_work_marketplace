@@ -1,0 +1,15 @@
+<div class="top-bar">
+    <div class="page-title">
+        {% block page_title %}
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ request.user.get_full_name|default:request.user.email }}</p>
+        {% endblock %}
+    </div>
+    <div class="user-info">
+        <div class="user-details">
+            <div class="user-name">{{ request.user.get_full_name|default:request.user.email }}</div>
+            <div class="user-role">Super Administrator</div>
+        </div>
+        <div class="user-avatar">{{ request.user.email|first|upper }}</div>
+    </div>
+</div>
