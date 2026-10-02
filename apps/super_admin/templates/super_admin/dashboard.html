@@ -4,6 +4,403 @@
 
 {% block title %}Dashboard | Super Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+body,
+.sidebar,
+.top-bar,
+.card,
+.data-table,
+.btn,
+input,
+select {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+}
+
+.data-table th,
+.stat-title,
+.nav-section-title,
+label,
+.badge,
+.btn,
+.stat-label,
+.stat-change,
+.progress-label {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    letter-spacing: 0.3px;
+}
+
+.stat-value,
+.page-title h1,
+.card-title {
+    font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif !important;
+    font-weight: 700;
+}
+
+/* Card treatment */
+.card,
+.stat-card {
+    border: 1px solid #c9c2b0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fdfcf8;
+}
+
+.card-header {
+    border-bottom: 1px solid #c9c2b0;
+    background: #faf8f3;
+    padding: 16px 24px;
+}
+
+.card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a2b4a;
+    letter-spacing: -0.2px;
+}
+
+/* Stat cards */
+.stat-card {
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #1a2b4a;
+}
+
+.stat-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: #1a2b4a;
+}
+
+.stat-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1a2b4a;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e0d3;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.stat-header {
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 34px;
+    font-weight: 700;
+    color: #1a2b4a;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    font-family: 'Source Serif 4', 'Times New Roman', serif !important;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.stat-change {
+    font-size: 11px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e0d3;
+    margin-top: 4px;
+    text-transform: uppercase;
+}
+
+.stat-change.positive { color: #065f46; }
+.stat-change.negative { color: #991b1b; }
+
+.stat-separator {
+    color: #c9c2b0;
+    margin: 0 6px;
+}
+
+/* Alerts */
+.alerts-container {
+    margin-bottom: 24px;
+}
+
+.alert {
+    border-radius: 0;
+    border-left-width: 4px;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-top: 1px solid #e5e0d3;
+    border-right: 1px solid #e5e0d3;
+    border-bottom: 1px solid #e5e0d3;
+}
+
+.alert-icon {
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    font-size: 13px;
+}
+
+.alert-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.5;
+    line-height: 1;
+}
+
+.alert-close:hover { opacity: 1; }
+
+.alert-warning { background: #fffbeb; border-left-color: #b45309; color: #92400e; }
+.alert-info    { background: #eff6ff; border-left-color: #1e40af; color: #1e40af; }
+.alert-danger  { background: #fef2f2; border-left-color: #991b1b; color: #991b1b; }
+.alert-success { background: #ecfdf5; border-left-color: #065f46; color: #065f46; }
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0;
+    border: 1px solid #e5e0d3;
+}
+
+.action-card {
+    background: #fdfcf8;
+    padding: 24px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border-right: 1px solid #e5e0d3;
+    border-bottom: 1px solid #e5e0d3;
+    transition: background 0.15s ease;
+}
+
+.action-card:hover {
+    background: #faf8f3;
+    transform: none;
+    box-shadow: none;
+    border-color: #e5e0d3;
+}
+
+.action-card:hover .action-title {
+    color: #1a2b4a;
+}
+
+.action-icon {
+    font-size: 26px;
+    filter: grayscale(0.4);
+}
+
+.action-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: #1a2b4a;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.action-desc {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+/* Data tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    background: #1a2b4a;
+}
+
+.data-table th {
+    background: #1a2b4a;
+    color: #f5f1e8;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #b8944d;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e0d3;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.data-table tr:hover {
+    background: #faf8f3;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 0;
+    font-size: 10px;
+    font-weight: 600;
+    gap: 6px;
+    border: 1px solid currentColor;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success { background: #ecfdf5; color: #065f46; }
+.badge-warning { background: #fffbeb; color: #92400e; }
+.badge-danger  { background: #fef2f2; color: #991b1b; }
+.badge-info    { background: #eff6ff; color: #1e40af; }
+.badge-secondary { background: #f5f1e8; color: #475569; }
+
+/* Buttons */
+.btn {
+    padding: 8px 14px;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: #1a2b4a;
+    color: #f5f1e8;
+    border-color: #1a2b4a;
+}
+
+.btn-primary:hover { background: #0f1c33; }
+
+.btn-outline {
+    background: #faf8f3;
+    border: 1px solid #c9c2b0;
+    color: #1a2b4a;
+}
+
+.btn-outline:hover {
+    background: #f0ebdd;
+    border-color: #1a2b4a;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 10px;
+}
+
+/* Typography helpers */
+.text-mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.text-nowrap { white-space: nowrap; }
+.text-center { text-align: center; color: #64748b; padding: 32px !important; }
+.font-medium { font-weight: 600; color: #1a2b4a; }
+
+/* Progress bar */
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e5e0d3;
+    border-radius: 0;
+    overflow: hidden;
+    border: 1px solid #c9c2b0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #1a2b4a;
+    transition: width 0.3s ease;
+}
+
+.progress-label {
+    font-size: 11px;
+    color: #1a2b4a;
+    min-width: 48px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+}
+
+/* Content area */
+.content-area {
+    background: #f5f1e8;
+}
+
+.admin-container > .card {
+    margin-bottom: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .quick-actions { grid-template-columns: 1fr; }
+    .action-card { border-right: none; }
+    .stat-value { font-size: 28px; }
+}
+</style>
+{% endblock %}
+
 {% block page_title %}
     <h1>Dashboard</h1>
     <p>Welcome back, {{ request.user.get_full_name|default:request.user.email }}</p>
@@ -27,7 +424,7 @@
                 {{ stats.online_agents|default:0 }} agents online
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">Active Tasks</span>
@@ -40,7 +437,7 @@
                 Average: {{ stats.avg_completion_time|floatformat:0|default:0 }}ms
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">Total Volume</span>
@@ -51,7 +448,7 @@
                 {{ stats.success_rate|floatformat:1|default:0 }}% success rate
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">Platform Health</span>
@@ -63,7 +460,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- System Alerts -->
     {% if system_alerts %}
     <div class="alerts-container">
@@ -71,18 +468,18 @@
         <div class="alert alert-{{ alert.type }}">
             <span class="alert-icon">!</span>
             <span>{{ alert.message }}</span>
-            <button class="alert-close">&times;</button>
+            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
-    
+
     <!-- Quick Actions -->
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Quick Actions</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding: 0;">
             <div class="quick-actions">
                 <a href="{% url 'super_admin:agents' %}" class="action-card">
                     <div class="action-icon">👥</div>
@@ -117,14 +514,14 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Tasks -->
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Recent Tasks</h3>
             <a href="{% url 'super_admin:tasks' %}" class="btn btn-outline">View All</a>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding: 0;">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -133,15 +530,15 @@
                         <th>Budget</th>
                         <th>Status</th>
                         <th>Created</th>
-                        <th>Actions</th>
+                        <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for task in recent_tasks %}
                     <tr>
                         <td class="text-mono">{{ task.id|slice:":8" }}</td>
-                        <td>{{ task.title|truncatechars:50 }}</td>
-                        <td class="text-nowrap">{{ task.budget_sats|default:0 }} sats</td>
+                        <td class="font-medium">{{ task.title|truncatechars:50 }}</td>
+                        <td class="text-nowrap text-mono">{{ task.budget_sats|default:0 }} sats</td>
                         <td>
                             {% if task.state == 'completed' %}
                             <span class="badge badge-success">Completed</span>
@@ -155,8 +552,8 @@
                             <span class="badge badge-secondary">{{ task.state }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-nowrap">{{ task.created_at|timesince }} ago</td>
-                        <td>
+                        <td class="text-nowrap text-mono">{{ task.created_at|timesince }} ago</td>
+                        <td style="text-align: right;">
                             <a href="{% url 'super_admin:task_detail' task.id %}" class="btn btn-sm btn-outline">View</a>
                         </td>
                     </tr>
@@ -169,14 +566,14 @@
             </table>
         </div>
     </div>
-    
+
     <!-- Recent Agents -->
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Recent Agents</h3>
             <a href="{% url 'super_admin:agents' %}" class="btn btn-outline">View All</a>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding: 0;">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -213,7 +610,7 @@
                             <span class="badge badge-danger">Inactive</span>
                             {% endif %}
                         </td>
-                        <td class="text-nowrap">{{ agent.last_heartbeat|timesince|default:"Never" }} ago</td>
+                        <td class="text-nowrap text-mono">{{ agent.last_heartbeat|timesince|default:"Never" }} ago</td>
                     </tr>
                     {% empty %}
                     <tr>
@@ -224,14 +621,14 @@
             </table>
         </div>
     </div>
-    
+
     <!-- Recent Transactions -->
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Recent Transactions</h3>
             <a href="{% url 'super_admin:payments' %}" class="btn btn-outline">View All</a>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding: 0;">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -246,7 +643,7 @@
                     {% for tx in recent_transactions %}
                     <tr>
                         <td class="text-mono">{{ tx.id|slice:":8" }}</td>
-                        <td class="font-medium">{{ tx.amount_sats|default:0 }} sats</td>
+                        <td class="font-medium text-mono">{{ tx.amount_sats|default:0 }} sats</td>
                         <td>
                             {% if tx.type == 'deposit' %}
                             <span class="badge badge-success">Deposit</span>
@@ -269,7 +666,7 @@
                             <span class="badge badge-secondary">{{ tx.status }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-nowrap">{{ tx.created_at|timesince }} ago</td>
+                        <td class="text-nowrap text-mono">{{ tx.created_at|timesince }} ago</td>
                     </tr>
                     {% empty %}
                     <tr>
@@ -281,61 +678,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    /* Additional dashboard-specific styles */
-    .progress-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .progress-bar {
-        flex: 1;
-        height: 6px;
-        background: var(--border-light);
-        border-radius: 3px;
-        overflow: hidden;
-    }
-    
-    .progress-fill {
-        height: 100%;
-        background: var(--success);
-        border-radius: 3px;
-        transition: width 0.3s ease;
-    }
-    
-    .progress-label {
-        font-size: 12px;
-        color: var(--text-secondary);
-        min-width: 40px;
-    }
-    
-    .stat-separator {
-        margin: 0 8px;
-        color: var(--border);
-    }
-    
-    .text-mono {
-        font-family: 'SF Mono', Monaco, monospace;
-        font-size: 12px;
-    }
-    
-    .text-nowrap {
-        white-space: nowrap;
-    }
-    
-    .text-center {
-        text-align: center;
-    }
-    
-    .font-medium {
-        font-weight: 500;
-    }
-    
-    .btn-sm {
-        padding: 4px 10px;
-        font-size: 12px;
-    }
-</style>
 {% endblock %}
