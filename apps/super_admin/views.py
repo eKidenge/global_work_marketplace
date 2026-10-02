@@ -242,7 +242,6 @@ class TaskManagement(View):
     template_name = 'super_admin/tasks.html'
 
     def get(self, request):
-        # `created_by` isn't a field on Task — only `matched_agent` is selectable here.
         tasks = Task.objects.select_related('matched_agent').all().order_by('-created_at')
         context = {
             'tasks': tasks[:100],
@@ -788,7 +787,7 @@ class DownloadReportView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementListView(View):
-    template_name = 'super_admin/announcements/announcements.html'
+    template_name = 'super_admin/announcements/list.html'
 
     def get(self, request):
         announcements = Announcement.objects.all().order_by('-created_at')
@@ -797,7 +796,7 @@ class AnnouncementListView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementCreateView(View):
-    template_name = 'super_admin/announcements/announcement_create.html'
+    template_name = 'super_admin/announcements/create.html'
 
     def get(self, request):
         return render(request, self.template_name)
@@ -815,7 +814,7 @@ class AnnouncementCreateView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class AnnouncementEditView(View):
-    template_name = 'super_admin/announcements/announcement_edit.html'
+    template_name = 'super_admin/announcements/edit.html'
 
     def get(self, request, announcement_id):
         announcement = get_object_or_404(Announcement, id=announcement_id)
@@ -851,7 +850,7 @@ class AnnouncementToggleView(View):
 
 @method_decorator(staff_member_required, name='dispatch')
 class DisputeListView(View):
-    template_name = 'super_admin//disputes/list.html'
+    template_name = 'super_admin/disputes/list.html'
 
     def get(self, request):
         disputes = Dispute.objects.select_related('task', 'raised_by').all().order_by('-created_at')
