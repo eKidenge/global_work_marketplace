@@ -1,0 +1,27 @@
+<div id="createAgentModal" style="display:none;position:fixed;inset:0;background:rgba(15,17,25,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fdfcf8;border:1px solid #c9c2b0;padding:28px;max-width:480px;width:90%;">
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:20px;font-family:'Source Serif 4',serif;color:#1a2b4a;">Create New Agent</h3>
+        <form method="post" action="{% url 'super_admin:agent_create' %}">
+            {% csrf_token %}
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#1a2b4a;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;">Name</label>
+                <input type="text" name="name" required style="width:100%;padding:10px 14px;font-size:14px;border:1px solid #c9c2b0;background:#fdfcf8;color:#1a2b4a;border-radius:0;">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#1a2b4a;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;">Email</label>
+                <input type="email" name="email" required style="width:100%;padding:10px 14px;font-size:14px;border:1px solid #c9c2b0;background:#fdfcf8;color:#1a2b4a;border-radius:0;">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#1a2b4a;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;">Agent Type</label>
+                <select name="agent_type" required style="width:100%;padding:10px 14px;font-size:14px;border:1px solid #c9c2b0;background:#fdfcf8;color:#1a2b4a;border-radius:0;">
+                    <option value="human">Human</option>
+                    <option value="ai">AI</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('createAgentModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Agent</button>
+            </div>
+        </form>
+    </div>
+</div>
