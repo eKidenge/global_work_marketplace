@@ -9,8 +9,6 @@
     <meta name="robots" content="index, follow">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
         *, *::before, *::after {
             margin: 0;
             padding: 0;
@@ -35,16 +33,19 @@
             --text-inverse: #f5f1e8;
             --text-inverse-secondary: rgba(245, 241, 232, 0.78);
             --text-inverse-muted: rgba(245, 241, 232, 0.55);
+
+            --font-serif: 'Times New Roman', Times, 'Liberation Serif', Georgia, serif;
+            --font-mono: 'Courier New', Courier, 'Liberation Mono', monospace;
         }
 
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Source Serif 4', 'Times New Roman', Georgia, serif;
+            font-family: var(--font-serif);
             background: var(--bg-main);
             color: var(--text-primary);
             line-height: 1.55;
-            font-size: 15px;
+            font-size: 16px;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
@@ -100,17 +101,17 @@
         }
 
         .brand-name {
-            font-family: 'Source Serif 4', serif;
-            font-size: 18px;
+            font-family: var(--font-serif);
+            font-size: 19px;
             font-weight: 700;
             color: var(--text-inverse);
             letter-spacing: -0.2px;
         }
 
         .brand-tagline {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 9px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--gold);
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -129,9 +130,9 @@
             display: inline-flex;
             align-items: center;
             padding: 10px 14px;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             text-decoration: none;
@@ -160,7 +161,6 @@
             color: var(--primary-dark);
         }
 
-        /* Nav toggle for mobile */
         .nav-toggle {
             display: none;
             background: none;
@@ -190,56 +190,62 @@
         }
 
         /* ============================================================
-           HERO — WHITE, SQUEEZED
+           HERO — CENTERED, BOLD, WHITE
            ============================================================ */
         .hero {
             background: var(--bg-hero);
             border-bottom: 1px solid var(--border-light);
-            padding: 56px 32px 48px;
+            padding: 72px 32px 64px;
+            text-align: center;
         }
 
         .hero-inner {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .hero-eyebrow {
             display: inline-block;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             color: var(--gold-dark);
-            padding: 5px 12px;
+            padding: 6px 14px;
             border: 1px solid var(--gold);
             background: var(--bg-subtle);
-            margin-bottom: 18px;
+            margin-bottom: 22px;
         }
 
         .hero-title {
-            font-family: 'Source Serif 4', serif;
-            font-size: 46px;
+            font-family: var(--font-serif);
+            font-size: 54px;
             font-weight: 700;
             line-height: 1.1;
-            letter-spacing: -1px;
+            letter-spacing: -1.2px;
             color: var(--primary);
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             max-width: 900px;
         }
 
         .hero-subtitle {
-            font-size: 17px;
-            line-height: 1.6;
+            font-family: var(--font-serif);
+            font-size: 18px;
+            line-height: 1.65;
             color: var(--text-secondary);
             max-width: 720px;
-            margin-bottom: 26px;
+            margin: 0 auto 32px;
         }
 
         .hero-actions {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn {
@@ -247,12 +253,12 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 13px 24px;
-            font-family: 'IBM Plex Mono', monospace;
+            padding: 14px 26px;
+            font-family: var(--font-mono);
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
             text-decoration: none;
             border: 1px solid transparent;
             border-radius: 0;
@@ -311,7 +317,7 @@
         }
 
         .stat-cell {
-            padding: 26px 24px;
+            padding: 28px 24px;
             text-align: center;
             border-right: 1px solid var(--border-light);
             display: flex;
@@ -324,8 +330,8 @@
         }
 
         .stat-value {
-            font-family: 'Source Serif 4', serif;
-            font-size: 30px;
+            font-family: var(--font-serif);
+            font-size: 32px;
             font-weight: 700;
             color: var(--primary);
             line-height: 1;
@@ -333,12 +339,12 @@
         }
 
         .stat-label {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
         }
 
         /* ============================================================
@@ -365,8 +371,8 @@
         }
 
         .section-title {
-            font-family: 'Source Serif 4', serif;
-            font-size: 28px;
+            font-family: var(--font-serif);
+            font-size: 30px;
             font-weight: 700;
             color: var(--primary);
             letter-spacing: -0.4px;
@@ -375,11 +381,12 @@
         }
 
         .section-note {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 11px;
+            font-weight: 600;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
         }
 
         /* ============================================================
@@ -405,9 +412,9 @@
         }
 
         .feature-index {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--gold-dark);
             letter-spacing: 1.5px;
             text-transform: uppercase;
@@ -418,8 +425,8 @@
         }
 
         .feature-title {
-            font-family: 'Source Serif 4', serif;
-            font-size: 18px;
+            font-family: var(--font-serif);
+            font-size: 19px;
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 8px;
@@ -427,7 +434,7 @@
         }
 
         .feature-desc {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-secondary);
             line-height: 1.6;
         }
@@ -459,11 +466,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             background: var(--primary);
             color: var(--text-inverse);
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-weight: 700;
             font-size: 13px;
             letter-spacing: 0.5px;
@@ -471,15 +478,15 @@
         }
 
         .step-title {
-            font-family: 'Source Serif 4', serif;
-            font-size: 17px;
+            font-family: var(--font-serif);
+            font-size: 18px;
             font-weight: 700;
             color: var(--primary);
             line-height: 1.3;
         }
 
         .step-desc {
-            font-size: 13.5px;
+            font-size: 14px;
             color: var(--text-secondary);
             line-height: 1.55;
         }
@@ -509,8 +516,8 @@
         }
 
         .cta-title {
-            font-family: 'Source Serif 4', serif;
-            font-size: 26px;
+            font-family: var(--font-serif);
+            font-size: 28px;
             font-weight: 700;
             color: var(--text-inverse);
             letter-spacing: -0.4px;
@@ -519,11 +526,12 @@
         }
 
         .cta-sub {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 11px;
+            font-weight: 600;
             color: var(--text-inverse-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
         }
 
         /* ============================================================
@@ -564,26 +572,26 @@
         }
 
         .footer-brand-name {
-            font-family: 'Source Serif 4', serif;
-            font-size: 17px;
+            font-family: var(--font-serif);
+            font-size: 18px;
             font-weight: 700;
             color: var(--text-inverse);
             letter-spacing: -0.2px;
         }
 
         .footer-brand-desc {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-inverse-muted);
             line-height: 1.6;
             max-width: 300px;
         }
 
         .footer-col h4 {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.8px;
             margin-bottom: 16px;
             color: var(--gold);
         }
@@ -592,7 +600,7 @@
             display: block;
             color: var(--text-inverse-secondary);
             text-decoration: none;
-            font-size: 13px;
+            font-size: 14px;
             padding: 5px 0;
             transition: color 0.15s;
         }
@@ -608,11 +616,12 @@
             flex-wrap: wrap;
             gap: 16px;
             padding: 24px 0;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 10px;
+            font-weight: 600;
             color: var(--text-inverse-muted);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
         }
 
         .footer-social {
@@ -623,14 +632,14 @@
         .footer-social a {
             color: var(--text-inverse-muted);
             text-decoration: none;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 10px;
-            font-weight: 600;
-            padding: 7px 12px;
+            font-weight: 700;
+            padding: 8px 14px;
             border: 1px solid rgba(245, 241, 232, 0.2);
             transition: color 0.15s, border-color 0.15s, background 0.15s;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
         }
 
         .footer-social a:hover {
@@ -643,52 +652,35 @@
            RESPONSIVE — 1024px TABLET
            ============================================================ */
         @media (max-width: 1024px) {
-            .header-inner {
-                padding: 0 24px;
-            }
+            .header-inner { padding: 0 24px; }
 
             .primary-nav a {
                 padding: 10px 10px;
                 font-size: 10px;
             }
 
-            .hero {
-                padding: 48px 24px 40px;
-            }
+            .hero { padding: 60px 24px 52px; }
+            .hero-title { font-size: 42px; }
+            .hero-subtitle { font-size: 17px; }
 
-            .hero-title {
-                font-size: 38px;
-            }
+            .section { padding: 56px 24px; }
 
-            .section {
-                padding: 56px 24px;
-            }
+            .stats-strip-inner { grid-template-columns: repeat(2, 1fr); }
 
-            .stats-strip-inner {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .stat-cell:nth-child(2) {
-                border-right: none;
-            }
-
+            .stat-cell:nth-child(2) { border-right: none; }
             .stat-cell:nth-child(1),
-            .stat-cell:nth-child(2) {
-                border-bottom: 1px solid var(--border-light);
-            }
+            .stat-cell:nth-child(2) { border-bottom: 1px solid var(--border-light); }
 
             .footer-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 32px;
             }
 
-            .footer-brand {
-                grid-column: 1 / -1;
-            }
+            .footer-brand { grid-column: 1 / -1; }
         }
 
         /* ============================================================
-           RESPONSIVE — 768px MOBILE (hamburger)
+           RESPONSIVE — 768px MOBILE
            ============================================================ */
         @media (max-width: 768px) {
             .header-inner {
@@ -696,23 +688,11 @@
                 padding: 0 18px;
             }
 
-            .brand-logo {
-                width: 38px;
-                height: 38px;
-            }
+            .brand-logo { width: 38px; height: 38px; }
+            .brand-name { font-size: 16px; }
+            .brand-tagline { font-size: 8px; letter-spacing: 1px; }
 
-            .brand-name {
-                font-size: 15px;
-            }
-
-            .brand-tagline {
-                font-size: 8px;
-                letter-spacing: 1px;
-            }
-
-            .nav-toggle {
-                display: inline-flex;
-            }
+            .nav-toggle { display: inline-flex; }
 
             .primary-nav {
                 display: none;
@@ -731,9 +711,7 @@
                 box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
             }
 
-            .primary-nav.open {
-                display: flex;
-            }
+            .primary-nav.open { display: flex; }
 
             .primary-nav a {
                 padding: 15px 22px;
@@ -753,71 +731,42 @@
                 justify-content: center;
             }
 
-            .page {
-                padding-top: 62px;
-            }
+            .page { padding-top: 62px; }
 
-            .hero {
-                padding: 36px 20px 32px;
-            }
-
-            .hero-title {
-                font-size: 30px;
-                letter-spacing: -0.6px;
-            }
-
-            .hero-subtitle {
-                font-size: 15px;
-            }
+            .hero { padding: 48px 20px 40px; }
+            .hero-title { font-size: 34px; letter-spacing: -0.8px; }
+            .hero-subtitle { font-size: 16px; }
 
             .hero-actions {
                 flex-direction: column;
                 align-items: stretch;
-            }
-
-            .hero-actions .btn {
                 width: 100%;
+                max-width: 320px;
             }
 
-            .stats-strip-inner {
-                grid-template-columns: 1fr;
-            }
+            .hero-actions .btn { width: 100%; }
+
+            .stats-strip-inner { grid-template-columns: 1fr; }
 
             .stat-cell {
                 border-right: none;
                 border-bottom: 1px solid var(--border-light);
-                padding: 20px 24px;
+                padding: 22px 24px;
             }
 
-            .stat-cell:last-child {
-                border-bottom: none;
-            }
+            .stat-cell:last-child { border-bottom: none; }
 
-            .section {
-                padding: 44px 20px;
-            }
-
-            .section-title {
-                font-size: 22px;
-            }
-
-            .section-header {
-                align-items: flex-start;
-            }
+            .section { padding: 44px 20px; }
+            .section-title { font-size: 24px; }
+            .section-header { align-items: flex-start; }
 
             .features-grid,
-            .steps {
-                grid-template-columns: 1fr;
-            }
+            .steps { grid-template-columns: 1fr; }
 
             .feature,
-            .step {
-                border-right: none;
-            }
+            .step { border-right: none; }
 
-            .cta-strip {
-                padding: 36px 20px;
-            }
+            .cta-strip { padding: 36px 20px; }
 
             .cta-inner {
                 flex-direction: column;
@@ -825,22 +774,11 @@
                 text-align: center;
             }
 
-            .cta-title {
-                font-size: 21px;
-            }
+            .cta-title { font-size: 22px; }
+            .cta-inner .btn { width: 100%; }
 
-            .cta-inner .btn {
-                width: 100%;
-            }
-
-            .footer-inner {
-                padding: 40px 20px 0;
-            }
-
-            .footer-grid {
-                grid-template-columns: 1fr;
-                gap: 28px;
-            }
+            .footer-inner { padding: 40px 20px 0; }
+            .footer-grid { grid-template-columns: 1fr; gap: 28px; }
 
             .footer-bottom {
                 flex-direction: column;
@@ -852,45 +790,21 @@
            RESPONSIVE — 480px SMALL MOBILE
            ============================================================ */
         @media (max-width: 480px) {
-            .header-inner {
-                padding: 0 14px;
-            }
+            .header-inner { padding: 0 14px; }
+            .brand-name { font-size: 14px; }
+            .brand-tagline { display: none; }
 
-            .brand-name {
-                font-size: 14px;
-            }
+            .hero { padding: 40px 16px 32px; }
+            .hero-title { font-size: 28px; }
+            .hero-subtitle { font-size: 15px; }
 
-            .brand-tagline {
-                display: none;
-            }
+            .section { padding: 36px 16px; }
+            .section-title { font-size: 21px; }
 
-            .hero {
-                padding: 32px 16px 28px;
-            }
+            .cta-title { font-size: 20px; }
+            .stat-value { font-size: 28px; }
 
-            .hero-title {
-                font-size: 26px;
-            }
-
-            .section {
-                padding: 36px 16px;
-            }
-
-            .section-title {
-                font-size: 20px;
-            }
-
-            .cta-title {
-                font-size: 19px;
-            }
-
-            .stat-value {
-                font-size: 26px;
-            }
-
-            .footer-inner {
-                padding: 32px 16px 0;
-            }
+            .footer-inner { padding: 32px 16px 0; }
         }
 
         /* ============================================================
@@ -947,7 +861,7 @@
         <section class="hero">
             <div class="hero-inner">
                 <span class="hero-eyebrow">Enterprise Edition</span>
-                <h1 class="hero-title">Real-time execution economy for AI and human work</h1>
+                <h1 class="hero-title">Real-Time Execution Economy for AI and Human Work</h1>
                 <p class="hero-subtitle">
                     A marketplace where tasks are routed instantly, executed by the best-fit
                     agent, verified, and settled without manual intervention. Built for scale,
