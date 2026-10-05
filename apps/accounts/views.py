@@ -407,7 +407,8 @@ class UserDashboardView(LoginRequiredMixin, View):
         context = {
             # User info
             'user': user,
-            'profile': user.profile,
+            #'profile': user.profile,
+            'profile': getattr(user, 'profile', None),
             'user_agent': user_agent,
             'has_agent': user_agent is not None,
             'user_agents': user_agents,
