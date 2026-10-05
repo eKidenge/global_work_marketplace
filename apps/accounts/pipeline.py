@@ -24,3 +24,17 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
         return None
 
     return {'user': existing, 'is_new': False}
+
+
+def create_profile(backend, user, is_new=False, *args, **kwargs):
+    """
+    Ensure every user created or authenticated via social auth has a Profile.
+    Runs on every social-auth login; get_or_create makes it idempotent.
+    """
+    if not user:
+        return None
+
+    from apps.accounts.models import Profile
+
+    Profile.objects.get_or_create(user=user)
+    return None
