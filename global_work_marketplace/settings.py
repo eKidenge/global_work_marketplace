@@ -18,6 +18,13 @@ SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+# Cookie / proxy security (behind Cloudflare → Render)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Login URLs
 LOGIN_URL = '/django-admin/login/'
 LOGIN_REDIRECT_URL = '/super-admin/'
@@ -333,11 +340,20 @@ SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/accounts/dashboard/'
 SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = '/accounts/dashboard/'
 SOCIAL_AUTH_DISCONNECT_REDIRECT_URL = '/accounts/login/'
 
-# Prevent social-auth from clashing with your custom User model's required fields.
-# If your accounts.User requires `username`, these tell social-auth what to do.
 SOCIAL_AUTH_USER_FIELDS = ['email', 'username', 'first_name', 'last_name']
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
-
-# Tell social-auth to use your custom User model (this is automatic via AUTH_USER_MODEL,
-# but these settings make the pipeline behave)
 SOCIAL_AUTH_USER_MODEL = 'accounts.User'
+
+# Custom pipeline: add email-matching so existing users don't collide.
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'apps.accounts.pipeline.associate_by_email',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
