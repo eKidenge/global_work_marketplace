@@ -204,9 +204,10 @@ class ProfileView(LoginRequiredMixin, View):
     template_name = 'accounts/profile.html'
     
     def get(self, request):
+        profile, _ = Profile.objects.get_or_create(user=request.user)
         context = {
             'user': request.user,
-            'profile': request.user.profile,
+            'profile': profile,
             'recent_activity': self.get_recent_activity(request.user),
         }
         return render(request, self.template_name, context)
@@ -227,11 +228,13 @@ class ProfileEditView(LoginRequiredMixin, View):
     template_name = 'accounts/edit_profile.html'
     
     def get(self, request):
-        form = ProfileEditForm(instance=request.user.profile)
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        form = ProfileEditForm(instance=profile)
         return render(request, self.template_name, {'form': form})
     
     def post(self, request):
-        form = ProfileEditForm(request.POST, request.FILES, instance=request.user.profile)
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully!')
@@ -297,6 +300,9 @@ class UserDashboardView(LoginRequiredMixin, View):
         from apps.verification.models import Verification
         
         user = request.user
+        
+        # Ensure profile exists for every user (including OAuth users)
+        profile, _ = Profile.objects.get_or_create(user=user)
         
         # Get user's agent profile
         user_agent = Agent.objects.filter(user=user).first()
@@ -407,8 +413,7 @@ class UserDashboardView(LoginRequiredMixin, View):
         context = {
             # User info
             'user': user,
-            #'profile': user.profile,
-            'profile': getattr(user, 'profile', None),
+            'profile': profile,
             'user_agent': user_agent,
             'has_agent': user_agent is not None,
             'user_agents': user_agents,
